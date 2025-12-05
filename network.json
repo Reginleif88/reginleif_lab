@@ -1,0 +1,114 @@
+{
+  "domain": "reginleif.io",
+  "netbios": "REGINLEIF",
+  "sites": {
+    "hq": {
+      "id": "hq",
+      "name": "HQ (Proxmox)",
+      "subnet": "172.16.0.0/24",
+      "gateway": "172.16.0.1",
+      "wan": "192.168.1.240",
+      "devices": [
+        {
+          "id": "opnsense-hq",
+          "name": "OPNsenseHQ",
+          "ip": "172.16.0.1",
+          "role": "Gateway/Firewall",
+          "icon": "shield",
+          "description": "Primary firewall and router for HQ site"
+        },
+        {
+          "id": "dc1",
+          "name": "P-WIN-DC1",
+          "ip": "172.16.0.10",
+          "role": "Domain Controller",
+          "icon": "server",
+          "description": "Primary DC, DNS, Forest Root"
+        },
+        {
+          "id": "srv1",
+          "name": "P-WIN-SRV1",
+          "ip": "172.16.0.11",
+          "role": "Royal Server",
+          "icon": "monitor",
+          "description": "Remote access gateway"
+        }
+      ]
+    },
+    "branch": {
+      "id": "branch",
+      "name": "Branch (Hyper-V)",
+      "subnet": "172.17.0.0/24",
+      "gateway": "172.17.0.1",
+      "wan": "192.168.1.245",
+      "devices": [
+        {
+          "id": "opnsense-branch",
+          "name": "OPNsenseBranch",
+          "ip": "172.17.0.1",
+          "role": "Gateway/Firewall",
+          "icon": "shield",
+          "description": "Primary firewall for Branch site"
+        },
+        {
+          "id": "dc2",
+          "name": "H-WIN-DC2",
+          "ip": "172.17.0.10",
+          "role": "Domain Controller",
+          "icon": "server",
+          "description": "Secondary DC for Branch site"
+        }
+      ]
+    },
+    "cloud": {
+      "id": "cloud",
+      "name": "Cloud",
+      "subnet": "",
+      "gateway": "",
+      "wan": "",
+      "devices": []
+    },
+    "wg-peers": {
+      "id": "wg-peers",
+      "name": "WireGuard Peers",
+      "subnet": "10.200.0.0/24",
+      "gateway": "",
+      "wan": "",
+      "devices": [
+        {
+          "id": "admin-pc",
+          "name": "Admin PC",
+          "ip": "10.200.0.10",
+          "role": "Road Warrior",
+          "icon": "monitor",
+          "description": "Admin Workstation (Home LAN)"
+        }
+      ]
+    }
+  },
+  "tunnel": {
+    "name": "WireGuard VPN",
+    "protocol": "WireGuard",
+    "port": 51820,
+    "subnet": "10.200.0.0/24",
+    "endpoints": {
+      "hq": {
+        "wan": "192.168.1.240",
+        "tunnel": "10.200.0.1"
+      },
+      "branch": {
+        "wan": "192.168.1.245",
+        "tunnel": "10.200.0.2"
+      }
+    },
+    "routes": {
+      "hq_to_branch": "172.17.0.0/24",
+      "branch_to_hq": "172.16.0.0/24"
+    },
+    "peer_routes": {
+      "peers_to_hq": "172.16.0.0/24",
+      "peers_to_branch": "172.17.0.0/24",
+      "peers_to_tunnel": "10.200.0.0/24"
+    }
+  }
+}
