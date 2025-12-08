@@ -93,7 +93,7 @@ Without site configuration, Active Directory assumes all Domain Controllers are 
     * Change "Replicate every" from 180 to **15 minutes** (for lab testing).
     * Click OK.
 
-> **Note:** `H-WIN-DC2` will automatically be placed in the `Branch-HyperV` site during DC promotion (Section 4) when you specify `-SiteName "Branch-HyperV"`. No manual server move is required.
+> **Note:** `H-WIN-DC2` will automatically be placed in the `Branch-HyperV` site during DC promotion (Section 5) when you specify `-SiteName "Branch-HyperV"`. No manual server move is required.
 
 ---
 
@@ -120,7 +120,64 @@ nslookup reginleif.io 172.16.0.10
 
 ---
 
-## 4. Promote DC2 to Domain Controller
+## 4. Configure DC1 NTP (Before Promotion)
+
+### Why Time Sync Must Be Configured First
+
+Kerberos authentication, the backbone of Active Directory security, uses timestamps to prevent replay attacks. By default, Kerberos allows a maximum **5-minute time skew** between a client and the authenticating DC. If clocks drift beyond this threshold:
+
+* DC promotion fails with authentication errors
+* Domain joins fail
+* AD replication breaks with "access denied" errors
+* Users cannot log in
+
+**This must be configured before promoting DC2**, otherwise the promotion may fail due to time skew between the servers.
+
+**Active Directory Time Hierarchy:**
+
+```
+External NTP (pool.ntp.org)
+        ↓
+   PDC Emulator (DC1) ─── Authoritative time source for domain
+        ↓
+   Other DCs (DC2) ─────── Sync from PDC Emulator
+        ↓
+   Domain Members ──────── Sync from authenticating DC
+```
+
+The **PDC Emulator** (by default, the first DC in the forest - `P-WIN-DC1`) is the authoritative time source. It must sync to a reliable external source. All other DCs and domain members automatically sync through the AD hierarchy once joined.
+
+### Configure DC1 (PDC Emulator) for External NTP
+
+**On DC1 (`P-WIN-DC1`):**
+
+```powershell
+# Configure external NTP servers (pool.ntp.org recommended)
+w32tm /config /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org" /syncfromflags:manual /reliable:yes /update
+
+# Restart the Windows Time service
+Restart-Service w32time
+
+# Force immediate sync
+w32tm /resync /rediscover
+
+# Verify configuration
+w32tm /query /configuration
+w32tm /query /status
+```
+
+**Expected output from `/query/status`:**
+
+```
+Source: 0.pool.ntp.org (or similar)
+Stratum: 2 or 3
+```
+
+> **What is Stratum?** NTP uses a hierarchy called "stratum" to indicate distance from an authoritative time source. Stratum 0 is an atomic clock, Stratum 1 is directly connected to it, Stratum 2 syncs from Stratum 1, etc. Your DC will typically be Stratum 2-4, which is normal.
+
+---
+
+## 5. Promote DC2 to Domain Controller
 
 **On H-WIN-DC2:**
 
@@ -131,12 +188,13 @@ Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 # Promote to Domain Controller (Branch site)
 Install-ADDSDomainController `
     -DomainName "reginleif.io" `
-    -SiteName "Branch-HyperV" `
-    -InstallDns:$true `
     -Credential (Get-Credential "REGINLEIF\Administrator") `
-    -SafeModeAdministratorPassword (ConvertTo-SecureString "<YourSafeModePassword>" -AsPlainText -Force) `
+    -SiteName "Branch-HyperV" `
+    -InstallDns `
     -Force
 ```
+
+> **Note:** The command will prompt for the Directory Services Restore Mode (DSRM) password.
 
 **Post-Reboot:** Server restarts automatically. DC2 is now a fully functional domain controller in the Branch site.
 
@@ -152,7 +210,7 @@ Get-SmbShare | Where-Object { $_.Name -match "SYSVOL|NETLOGON" }
 
 ---
 
-## 5. Post-Promotion DNS Configuration
+## 6. Post-Promotion DNS Configuration
 
 After DC2 (`H-WIN-DC2`) is promoted and its DNS service is operational, you must reconfigure DC1's DNS settings to prevent the **AD Island problem**.
 
@@ -250,9 +308,87 @@ Get-DnsServerZone | Where-Object { $_.IsReverseLookupZone -eq $true }
 
 > **What are reverse DNS zones and PTR records?** Forward DNS uses A records to resolve names to IPs (`p-win-dc1.reginleif.io` → `172.16.0.10`). Reverse DNS uses PTR (Pointer) records to resolve IPs back to names (`172.16.0.10` → `p-win-dc1.reginleif.io`). PTR records are stored in reverse lookup zones. Many applications and security tools rely on reverse lookups for validation, logging, and spam filtering.
 
+### Configure DNS Forwarders for External Resolution
+
+AD DNS servers are authoritative for the `reginleif.io` zone but cannot resolve external domains (like `google.com`) without forwarders. Configure each DC to forward external queries to its local OPNsense gateway, which runs Unbound DNS resolver.
+
+**On DC1 (`P-WIN-DC1`):**
+
+```powershell
+# Add OPNsense as DNS forwarder
+Add-DnsServerForwarder -IPAddress "172.16.0.1"
+
+# Verify forwarder configuration
+Get-DnsServerForwarder
+```
+
+**On DC2 (`H-WIN-DC2`):**
+
+```powershell
+# Add OPNsense as DNS forwarder
+Add-DnsServerForwarder -IPAddress "172.17.0.1"
+
+# Verify forwarder configuration
+Get-DnsServerForwarder
+```
+
+**Test external resolution:**
+
+```powershell
+# Should resolve to external IP
+Resolve-DnsName google.com
+
+# Verify internet connectivity
+Test-Connection 1.1.1.1
+```
+
+> **Why use OPNsense as forwarder?** Each DC forwards to its local OPNsense gateway rather than directly to public DNS (8.8.8.8, 1.1.1.1). This keeps external DNS traffic local to each site, reduces WAN dependency, and allows OPNsense to provide DNS filtering/logging if configured. OPNsense runs Unbound, a full recursive resolver, so it can resolve any public domain.
+
 ---
 
-## 6. Final Validation
+## 7. Verify DC2 Time Synchronization
+
+After promotion, DC2 should automatically sync time from the domain hierarchy (ultimately from DC1, the PDC Emulator configured in Section 4).
+
+**On DC2 (`H-WIN-DC2`):**
+
+```powershell
+# Check current time source
+w32tm /query /status
+
+# Force rediscovery of time source
+w32tm /resync /rediscover
+
+# Verify it syncs from domain hierarchy
+w32tm /query /source
+```
+
+**Expected output:**
+
+```
+P-WIN-DC1.reginleif.io
+```
+
+If DC2 shows "Local CMOS Clock" or "Free-running System Clock", force it to use the domain hierarchy:
+
+```powershell
+# Reset DC2 to use domain hierarchy (NT5DS = domain hierarchy for DCs)
+w32tm /config /syncfromflags:domhier /update
+Restart-Service w32time
+w32tm /resync /rediscover
+```
+
+**Verify time offset between DCs (should be < 1 second):**
+
+```powershell
+w32tm /stripchart /computer:P-WIN-DC1 /samples:3 /dataonly
+```
+
+> **Hyper-V Time Sync Warning:** Hyper-V has a "Time Synchronization" integration service that can conflict with AD time sync. For DC2 running on Hyper-V, consider disabling this in the VM settings (Integration Services → uncheck Time Synchronization) to let AD control time. Alternatively, leave it enabled but understand that AD time sync takes precedence for domain-joined machines.
+
+---
+
+## 8. Final Validation
 
 ### IP Configuration Summary
 
@@ -263,6 +399,8 @@ Get-DnsServerZone | Where-Object { $_.IsReverseLookupZone -eq $true }
 | **Gateway** | `172.16.0.1` | `172.17.0.1` |
 | **DNS 1** | `172.17.0.10` (Partner DC) | `172.16.0.10` (Partner DC) |
 | **DNS 2** | `172.16.0.10` (Self) | `172.17.0.10` (Self) |
+| **DNS Forwarder** | `172.16.0.1` (OPNsense HQ) | `172.17.0.1` (OPNsense Branch) |
+| **NTP Source** | `pool.ntp.org` (External) | `P-WIN-DC1` (Domain Hierarchy) |
 
 ### Validation Checklist
 
@@ -274,4 +412,21 @@ Get-DnsServerZone | Where-Object { $_.IsReverseLookupZone -eq $true }
     ```powershell
     Get-ADReplicationPartnerMetadata -Target P-WIN-DC1
     repadmin /showrepl
+    ```
+
+* [ ] **NTP Time Sync:** Verify both DCs have correct time sources:
+
+    ```powershell
+    # On DC1 - Should show external NTP source
+    w32tm /query /source
+
+    # On DC2 - Should show DC1 as source
+    w32tm /query /source
+    ```
+
+* [ ] **External DNS Resolution:** Verify both DCs can resolve external domains:
+
+    ```powershell
+    Resolve-DnsName google.com
+    Test-Connection 1.1.1.1
     ```

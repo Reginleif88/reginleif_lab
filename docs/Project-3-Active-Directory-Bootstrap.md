@@ -41,8 +41,14 @@ Executed via RDP to allow copy-paste.
 Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
 
 # Promote to Forest Root
-Install-ADDSForest -DomainName "reginleif.io" -DomainNetbiosName "REGINLEIF" -InstallDns:$true -SafeModeAdministratorPassword (ConvertTo-SecureString "<YourSafeModePassword>" -AsPlainText -Force) -Force
+Install-ADDSForest `
+    -DomainName "reginleif.io" `
+    -DomainNetbiosName "REGINLEIF" `
+    -InstallDns:$true `
+    -Force
 ```
+
+> **Note:** The command will prompt for the Directory Services Restore Mode (DSRM) password.
 
 ---
 
