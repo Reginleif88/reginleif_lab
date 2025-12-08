@@ -114,6 +114,12 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
      * Sends periodic keepalive packets to maintain the tunnel even when idle
      * Prevents NAT session timeout (most home routers timeout after 30-60 seconds)
 
+   > **Why asymmetric Allowed IPs?**
+   >
+   > HQ's peer entry for Branch uses `10.200.0.2/32` because HQ only needs to reach Branch's specific tunnel endpoint. Branch's peer entry for HQ (Step 2) uses `10.200.0.0/24` for the tunnel subnet so that road warrior clients (Project 9) can access Branch resources through the site-to-site tunnel chain.
+   >
+   > Traffic flow for road warrior → Branch: `Admin PC (10.200.0.10) → HQ tunnel → Branch tunnel → Branch LAN (172.17.0.0/24)`
+
 6. **Click Save**
 
 7. **Enable the WireGuard Service:**
