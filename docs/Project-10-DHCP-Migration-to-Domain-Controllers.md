@@ -16,6 +16,8 @@ Configure DHCP on both Domain Controllers to provide IP addresses with AD-integr
 | HQ | P-WIN-DC1 | 172.16.0.0/24 | .30 - .254 | .1 - .29 |
 | Branch | H-WIN-DC2 | 172.17.0.0/24 | .30 - .254 | .1 - .29 |
 
+> **Design Note:** Each site has a single DHCP server with no failover configured. This is acceptable for lab purposes where brief outages are tolerable. For production resilience, DHCP failover between partner servers would be implemented. A future project will add dedicated DHCP servers with failover at each site.
+
 ---
 
 ## 1. Install DHCP Role
@@ -125,6 +127,19 @@ Set-DhcpServerv4DnsSetting -ComputerName localhost `
 | Linux/Other | DHCP registers both A and PTR (if enabled) |
 
 **Note:** `UpdateDnsRRForOlderClients` allows DHCP to register records for non-Windows clients.
+
+### Enable Conflict Detection (Optional)
+
+Configure DHCP to check for IP conflicts before assigning addresses. This prevents duplicate IP assignment if a static IP is accidentally configured within the DHCP range.
+
+Run on **both** DCs:
+
+```powershell
+# Enable conflict detection with 2 ping attempts before assignment
+Set-DhcpServerv4ConflictDetection -ComputerName localhost -Enable $true -Attempts 2
+```
+
+> **Trade-off:** Conflict detection adds ~2 seconds to lease acquisition (time for ping attempts). For lab environments with few static IPs, this minor delay provides worthwhile protection against misconfigurations.
 
 ---
 
