@@ -6,6 +6,7 @@ status: planned
 ---
 
 ## Goal
+
 Configure a "Road Warrior" WireGuard peer for the Administrator's PC. This allows secure, direct access to the Royal Server (`P-WIN-SRV1`) and other internal lab resources (`172.16.0.0/24` and `172.17.0.0/24`) without exposing management ports (like 54899) to the main Home Network.
 
 ---
@@ -23,11 +24,11 @@ Configure a "Road Warrior" WireGuard peer for the Administrator's PC. This allow
 
 **Prerequisite:** Install the official [WireGuard Client](https://www.wireguard.com/install/).
 
-1.  Open WireGuard and click **Add Tunnel > Add empty tunnel**.
-2.  Name it `reginleif-lab`.
-3.  **Generate Keys:** The client will automatically generate a **Public Key** and **Private Key**.
-    *   *Copy the Public Key to your clipboard.*
-4.  **Edit Configuration:**
+1. Open WireGuard and click **Add Tunnel > Add empty tunnel**.
+2. Name it `reginleif-lab`.
+3. **Generate Keys:** The client will automatically generate a **Public Key** and **Private Key**.
+    * *Copy the Public Key to your clipboard.*
+4. **Edit Configuration:**
 
 ```ini
 [Interface]
@@ -50,17 +51,17 @@ PersistentKeepalive = 25
 
 Add the Admin PC as a known peer to the existing `HQ_Instance` (created in Project 7).
 
-1.  **Navigate to:** VPN > WireGuard > **Peers**.
-2.  **Add New Peer:**
-    *   **Name:** `Admin-PC`
-    *   **Public Key:** (Paste the Public Key from Step 2)
-    *   **Allowed IPs:** `10.200.0.10/32`
-    *   *(Note: This restricts the tunnel so this peer can ONLY spoof this specific IP).*
-3.  **Navigate to:** VPN > WireGuard > **Instances**.
-4.  **Edit Instance:**
-    *   Select `HQ_Instance` (created in Project 7).
-    *   In the **Peers** dropdown, check the box for `Admin-PC` to add it to the list.
-5.  **Save & Apply**.
+1. **Navigate to:** VPN > WireGuard > **Peers**.
+2. **Add New Peer:**
+    * **Name:** `Admin-PC`
+    * **Public Key:** (Paste the Public Key from Step 2)
+    * **Allowed IPs:** `10.200.0.10/32`
+    * *(Note: This restricts the tunnel so this peer can ONLY spoof this specific IP).*
+3. **Navigate to:** VPN > WireGuard > **Instances**.
+4. **Edit Instance:**
+    * Select `HQ_Instance` (created in Project 7).
+    * In the **Peers** dropdown, check the box for `Admin-PC` to add it to the list.
+5. **Save & Apply**.
 
 ---
 
@@ -68,16 +69,18 @@ Add the Admin PC as a known peer to the existing `HQ_Instance` (created in Proje
 
 The `Trusted_Lab_Networks` alias created in Project 7 already includes the WireGuard tunnel subnet (`10.200.0.0/24`). This means road warrior traffic is automatically permitted by the existing rule:
 
-```
+```md
 Source: Trusted_Lab_Networks → Destination: Trusted_Lab_Networks
 ```
 
 **No additional firewall rules are required.** The road warrior client (`10.200.0.10`) can:
-- Access HQ LAN resources (`172.16.0.0/24`)
-- Access Branch LAN resources (`172.17.0.0/24`) via the site-to-site tunnel
-- Query DNS on Domain Controllers (`172.16.0.10`, `172.17.0.10`)
+
+* Access HQ LAN resources (`172.16.0.0/24`)
+* Access Branch LAN resources (`172.17.0.0/24`) via the site-to-site tunnel
+* Query DNS on Domain Controllers (`172.16.0.10`, `172.17.0.10`)
 
 > **Strict Option:** If you want to limit the Admin PC to specific resources only, create a dedicated rule:
+>
 > * **Action:** Pass
 > * **Source:** `10.200.0.10/32`
 > * **Destination:** `172.16.0.11/32` (Royal Server only)
@@ -89,22 +92,22 @@ Source: Trusted_Lab_Networks → Destination: Trusted_Lab_Networks
 
 Now that the tunnel provides a route, configure Royal TS on the Admin PC.
 
-1.  **Activate VPN:** Click **Activate** in the WireGuard client.
-2.  **Open Royal TS.**
-3.  **Royal Server Object:**
-    *   **Computer Name:** `172.16.0.11` (or `p-win-srv1.reginleif.io` if DNS is working).
-    *   **Port:** `54899` (Default).
-4.  **Test Connection:**
-    *   Right-click > **Test**.
-    *   *Expected Result:* **Green / Success**.
-5.  **Use as Gateway:**
-    *   You can now set this Royal Server object as the **Secure Gateway** for all other connections (RDP to DCs, SSH to OPNsense), keeping them completely isolated from the Home Network.
+1. **Activate VPN:** Click **Activate** in the WireGuard client.
+2. **Open Royal TS.**
+3. **Royal Server Object:**
+    * **Computer Name:** `172.16.0.11` (or `p-win-srv1.reginleif.io` if DNS is working).
+    * **Port:** `54899` (Default).
+4. **Test Connection:**
+    * Right-click > **Test**.
+    * *Expected Result:* **Green / Success**.
+5. **Use as Gateway:**
+    * You can now set this Royal Server object as the **Secure Gateway** for all other connections (RDP to DCs, SSH to OPNsense), keeping them completely isolated from the Home Network.
 
 ---
 
 ## 6. Validation Checklist
 
-- [ ] **VPN Connection:** WireGuard client shows "Active" and "Data Received" increments.
-- [ ] **Ping:** Can ping `172.16.0.1` (Gateway) and `172.16.0.11` (Royal Server).
-- [ ] **DNS:** `nslookup p-win-srv1.reginleif.io` resolves to `172.16.0.11`.
-- [ ] **Royal Server:** Royal TS successfully connects to the management service.
+* [ ] **VPN Connection:** WireGuard client shows "Active" and "Data Received" increments.
+* [ ] **Ping:** Can ping `172.16.0.1` (Gateway) and `172.16.0.11` (Royal Server).
+* [ ] **DNS:** `nslookup p-win-srv1.reginleif.io` resolves to `172.16.0.11`.
+* [ ] **Royal Server:** Royal TS successfully connects to the management service.
