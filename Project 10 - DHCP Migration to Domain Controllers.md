@@ -12,7 +12,7 @@ Configure DHCP on both Domain Controllers to provide IP addresses with AD-integr
 ---
 
 | Site | DC | Subnet | DHCP Range | Reserved |
-|------|-----|--------|------------|----------|
+| ------ | ----- | -------- | ------------ | ---------- |
 | HQ | P-WIN-DC1 | 172.16.0.0/24 | .30 - .254 | .1 - .29 |
 | Branch | H-WIN-DC2 | 172.17.0.0/24 | .30 - .254 | .1 - .29 |
 
@@ -119,7 +119,7 @@ Set-DhcpServerv4DnsSetting -ComputerName localhost `
 ### Understanding DNS Registration
 
 | Client Type | DNS Registration |
-|-------------|------------------|
+| ------------- | ------------------ |
 | Domain-joined Windows | Client registers A record, DHCP registers PTR |
 | Non-domain Windows | DHCP registers both A and PTR (if enabled) |
 | Linux/Other | DHCP registers both A and PTR (if enabled) |
