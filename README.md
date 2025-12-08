@@ -1,6 +1,6 @@
 REGINLEIF.IO — Enterprise Homelab
 
-> A multi-site Active Directory infrastructure simulating a corporate headquarters and branch office environment, built to demonstrate real-world sysadmin and network engineering skills. The project is evolving towards a cloud-hybrid architecture.
+> A multi-site Active Directory infrastructure simulating a corporate headquarters and branch office environment, built to demonstrate real-world sysadmin and network engineering skills, evolving towards a cloud-hybrid architecture.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/Status-Active-green)
