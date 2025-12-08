@@ -21,16 +21,19 @@ Status options:
 -->
 
 ## Goal
+
 Describe the project goal here.
 
 ---
 
 ## 1. Section Title
+
 Content for section 1...
 
 ---
 
 ## 2. Section Title
+
 Content for section 2...
 
 ```bash

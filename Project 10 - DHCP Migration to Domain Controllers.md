@@ -6,6 +6,7 @@ status: planned
 ---
 
 ## Goal
+
 Configure DHCP on both Domain Controllers to provide IP addresses with AD-integrated DNS registration. Each DC manages DHCP for its respective site.
 
 ---
@@ -34,16 +35,19 @@ Restart-Computer -Force
 Only authorized DHCP servers can issue leases in an AD environment.
 
 **On DC1 (P-WIN-DC1):**
+
 ```powershell
 Add-DhcpServerInDC -DnsName "P-WIN-DC1.reginleif.io" -IPAddress 172.16.0.10
 ```
 
 **On DC2 (H-WIN-DC2):**
+
 ```powershell
 Add-DhcpServerInDC -DnsName "H-WIN-DC2.reginleif.io" -IPAddress 172.17.0.10
 ```
 
 ### Verify Authorization
+
 ```powershell
 Get-DhcpServerInDC
 ```
@@ -127,6 +131,7 @@ Set-DhcpServerv4DnsSetting -ComputerName localhost `
 ## 5. Validation
 
 ### Check DHCP Server Status
+
 ```powershell
 # View all scopes
 Get-DhcpServerv4Scope
@@ -140,6 +145,7 @@ Get-DhcpServerv4ScopeStatistics
 From a client on the network:
 
 **Windows:**
+
 ```powershell
 # Release current lease
 ipconfig /release
@@ -152,6 +158,7 @@ ipconfig /all
 ```
 
 **Linux:**
+
 ```bash
 # Release and renew (varies by distro)
 sudo dhclient -r
@@ -165,6 +172,7 @@ cat /etc/resolv.conf
 ### Verify DNS Registration
 
 On a Domain Controller:
+
 ```powershell
 # Check if client hostname appears in DNS
 Get-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "<client-hostname>"
@@ -174,6 +182,7 @@ Get-DnsServerResourceRecord -ZoneName "reginleif.io" -RRType A
 ```
 
 ### View Active Leases
+
 ```powershell
 # On DC1
 Get-DhcpServerv4Lease -ScopeId 172.16.0.0

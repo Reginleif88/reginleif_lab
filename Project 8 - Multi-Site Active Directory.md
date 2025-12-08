@@ -6,9 +6,11 @@ status: planned
 ---
 
 ## Goal
+
 Configure Active Directory for multi-site operation after the WireGuard VPN tunnel is established (Project 7). This includes Windows firewall rules, AD Sites and Services, promoting the Branch DC, and configuring DNS for proper replication.
 
 **Prerequisites:**
+
 - Project 7 completed (Site-to-Site VPN working)
 - P-WIN-DC1 (HQ) is already a Domain Controller for `reginleif.io`
 - H-WIN-DC2 (Branch) is a Windows Server ready for promotion
@@ -20,6 +22,7 @@ Configure Active Directory for multi-site operation after the WireGuard VPN tunn
 **Important:** OPNsense firewall rules control traffic at the network gateway level, but Windows Server has its own host-based firewall that applies independently. By default, Windows blocks SMB (File Sharing), RPC (AD Replication), and ICMP (Ping) from "foreign" subnets.
 
 **The Issue:** Even with a perfectly configured VPN, Windows will block:
+
 - ICMP Echo Requests (ping) from remote subnets
 - SMB (TCP 445) for file shares and SYSVOL replication
 - RPC (Dynamic ports) for AD replication
@@ -48,6 +51,7 @@ New-NetFirewallRule -DisplayName "Allow ICMPv4 - Ping" -Protocol ICMPv4 `
 ```
 
 **Verify the rules were created:**
+
 ```powershell
 Get-NetFirewallRule -DisplayName "Allow Lab*" | Format-Table Name, DisplayName, Enabled
 Get-NetFirewallRule -DisplayName "Allow ICMPv4*" | Format-Table Name, DisplayName, Enabled
@@ -75,17 +79,17 @@ Without site configuration, Active Directory assumes all Domain Controllers are 
 
 **From your Windows 11 management workstation** (with RSAT installed - see Project 4):
 
-1.  **Open AD Sites and Services (`dssite.msc`):**
-    * Rename `Default-First-Site-Name` to **`HQ-Proxmox`**.
-    * Right-click Sites > New Site > Name: **`Branch-HyperV`** > Select `DEFAULTIPSITELINK` > OK.
-2.  **Define Subnets:**
-    * Right-click Subnets > New Subnet > Prefix: `172.16.0.0/24` > Select **`HQ-Proxmox`** > OK.
-    * Right-click Subnets > New Subnet > Prefix: `172.17.0.0/24` > Select **`Branch-HyperV`** > OK.
-3.  **Configure Site Link Replication:**
-    * Expand Sites > Inter-Site Transports > IP.
-    * Right-click **DEFAULTIPSITELINK** > Properties.
-    * Change "Replicate every" from 180 to **15 minutes** (for lab testing).
-    * Click OK.
+1. **Open AD Sites and Services (`dssite.msc`):**
+    - Rename `Default-First-Site-Name` to **`HQ-Proxmox`**.
+    - Right-click Sites > New Site > Name: **`Branch-HyperV`** > Select `DEFAULTIPSITELINK` > OK.
+2. **Define Subnets:**
+    - Right-click Subnets > New Subnet > Prefix: `172.16.0.0/24` > Select **`HQ-Proxmox`** > OK.
+    - Right-click Subnets > New Subnet > Prefix: `172.17.0.0/24` > Select **`Branch-HyperV`** > OK.
+3. **Configure Site Link Replication:**
+    - Expand Sites > Inter-Site Transports > IP.
+    - Right-click **DEFAULTIPSITELINK** > Properties.
+    - Change "Replicate every" from 180 to **15 minutes** (for lab testing).
+    - Click OK.
 
 > **Note:** `H-WIN-DC2` will automatically be placed in the `Branch-HyperV` site during DC promotion (Section 4) when you specify `-SiteName "Branch-HyperV"`. No manual server move is required.
 
@@ -135,6 +139,7 @@ Install-ADDSDomainController `
 **Post-Reboot:** Server restarts automatically. DC2 is now a fully functional domain controller in the Branch site.
 
 **Verify Promotion:**
+
 ```powershell
 # Check DC status
 Get-ADDomainController -Identity H-WIN-DC2
@@ -152,12 +157,14 @@ After DC2 (`H-WIN-DC2`) is promoted and its DNS service is operational, you must
 ### Understanding the AD Island Problem
 
 When a Domain Controller has `127.0.0.1` (loopback) as its primary DNS:
+
 - During boot, the local DNS Server service may not be running yet
 - The DC cannot resolve SRV records for other Domain Controllers
 - It may register itself as authoritative for zones incorrectly
 - AD replication fails because it can't discover replication partners
 
 **Current DC1 Configuration (Before Fix):**
+
 - Primary DNS: `127.0.0.1` (loopback - problematic)
 - Secondary DNS: None or `172.17.0.10` (DC2)
 
@@ -168,6 +175,7 @@ When a Domain Controller has `127.0.0.1` (loopback) as its primary DNS:
 Before changing DC1, confirm DC2's DNS service is operational.
 
 **On DC2 (`H-WIN-DC2`):**
+
 ```powershell
 # Check DNS Server service is running
 Get-Service -Name DNS
@@ -187,6 +195,7 @@ Resolve-DnsName -Name "_ldap._tcp.dc._msdcs.reginleif.io" -Type SRV -Server 172.
 Once DC2 DNS is verified, update DC1 to use the reciprocal configuration.
 
 **On DC1 (`P-WIN-DC1`):**
+
 ```powershell
 # Update DNS server addresses - partner DC first, own static IP second
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "172.17.0.10", "172.16.0.10"
@@ -196,6 +205,7 @@ Get-DnsClientServerAddress -InterfaceAlias "Ethernet"
 ```
 
 **On DC2 (`H-WIN-DC2`):**
+
 ```powershell
 # Update DNS server addresses - partner DC first, own static IP second
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "172.16.0.10", "172.17.0.10"
@@ -224,6 +234,7 @@ repadmin /showrepl
 ## 6. Final Validation
 
 ### IP Configuration Summary
+
 | Setting | P-WIN-DC1 (HQ) | H-WIN-DC2 (Branch) |
 | :--- | :--- | :--- |
 | **IP Address** | `172.16.0.10` | `172.17.0.10` |
@@ -233,10 +244,12 @@ repadmin /showrepl
 | **DNS 2** | `172.16.0.10` (Self) | `172.17.0.10` (Self) |
 
 ### Validation Checklist
+
 - [ ] **VPN Handshake:** Check OPNsense Dashboard -> WireGuard widget for "Last Handshake" time.
 - [ ] **Ping Test:** Ping `172.17.0.10` from `P-WIN-DC1`. (Should be <10ms if local).
 - [ ] **DNS Resolution:** `nslookup h-win-dc2.reginleif.io` from HQ should resolve to `172.17.0.10`.
 - [ ] **AD Replication:** Run PowerShell:
+
     ```powershell
     Get-ADReplicationPartnerMetadata -Target P-WIN-DC1
     repadmin /showrepl

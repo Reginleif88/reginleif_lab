@@ -6,6 +6,7 @@ status: completed
 ---
 
 ## Goal
+
 Simulate a corporate **"Headquarters vs. Branch"** topology. Connect the Proxmox environment (HQ) and Hyper-V environment (Branch) via an encrypted **WireGuard Site-to-Site VPN** to allow secure Active Directory replication and transparent routing between sites.
 
 ---
@@ -28,10 +29,11 @@ Simulate a corporate **"Headquarters vs. Branch"** topology. Connect the Proxmox
 ## 2. OPNsense Configuration
 
 ### A. Interface Assignments
-1.  **OPNsenseHQ:**
+
+1. **OPNsenseHQ:**
     * **WAN:** `vtnet0` (Bridged to Home Network/vmbr0).
     * **LAN:** `vtnet1` (Static `172.16.0.1/24`).
-2.  **OPNsenseBranch:**
+2. **OPNsenseBranch:**
     * **WAN:** `hn0` (Bridged to Physical NIC/Default Switch).
     * **LAN:** `hn1` (Static `172.17.0.1/24`).
 
@@ -260,18 +262,21 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
 After both sides are configured, verify connectivity:
 
 **From OPNsenseHQ:**
+
 1. Navigate to **Interfaces > Diagnostics > Ping**
 2. **Hostname:** `10.200.0.2` (Branch's tunnel IP)
 3. **Source Address:** `10.200.0.1` (HQ's tunnel IP)
 4. **Click Ping** - You should see replies
 
 **From OPNsenseBranch:**
+
 1. Navigate to **Interfaces > Diagnostics > Ping**
 2. **Hostname:** `10.200.0.1` (HQ's tunnel IP)
 3. **Source Address:** `10.200.0.2` (Branch's tunnel IP)
 4. **Click Ping** - You should see replies
 
 **Troubleshooting:**
+
 * **No handshake:** Check firewall WAN rules allow UDP/51820
 * **Handshake successful but no ping:** Check WireGuard interface firewall rules
 * **Asymmetric routing:** Verify "Allowed IPs" are correctly configured on both sides
@@ -281,10 +286,11 @@ After both sides are configured, verify connectivity:
 #### Step 4: Interface Assignment (Optional but Recommended)
 
 **Why assign the interface?**
-- Enables static routes and multi-WAN failover using the VPN gateway
-- Provides RRD graphs for tunnel traffic statistics
-- Easier packet capture and debugging with tcpdump
-- Dedicated firewall rules tab instead of "WireGuard (Group)"
+
+* Enables static routes and multi-WAN failover using the VPN gateway
+* Provides RRD graphs for tunnel traffic statistics
+* Easier packet capture and debugging with tcpdump
+* Dedicated firewall rules tab instead of "WireGuard (Group)"
 
 **On both OPNsenseHQ and OPNsenseBranch:**
 
@@ -349,7 +355,7 @@ After both sides are configured, verify connectivity:
    * Click **Save** and **Apply Changes**
 
    > **Troubleshooting tip:** If the tunnel handshake is working (check VPN > WireGuard > Status) but no traffic flows, check that gateway monitoring is either disabled or has a valid Monitor IP configured.
-
+   >
    > **Known Issue:** There are [active bugs in OPNsense 25.x](https://github.com/opnsense/core/issues/8990) related to gateway monitoring and WireGuard failover. In multi-WAN scenarios, gateways may incorrectly report as "up" when down, or disabled gateways may be selected as default. If you experience unexpected failover behavior, a firewall reboot may be required as a temporary workaround.
 
 5. **Update Firewall Rules (Required):**
@@ -376,12 +382,14 @@ After both sides are configured, verify connectivity:
 #### Important Notes
 
 **Understanding "Allowed IPs":**
+
 * This field serves **two purposes** in WireGuard:
   1. **Routing Policy:** "Send traffic destined for these IPs through this peer"
   2. **Source Validation:** "Only accept packets from this peer if they originate from these IPs"
 * Common mistake: Forgetting to include the peer's tunnel IP (`10.200.0.x/32`) results in inability to ping the remote gateway
 
 **Why HQ uses `10.200.0.0/24` in Allowed IPs (Branch → HQ):**
+
 * Project 9 (Road Warrior VPN) will allocate client IPs from `10.200.0.0/24`
 * By including the `/24` on Branch, road warrior clients can access Branch resources transparently
 * HQ uses specific `/24` entries because it only needs to route known subnets
@@ -391,12 +399,14 @@ After both sides are configured, verify connectivity:
 > **Note:** Detailed step-by-step firewall configuration is provided in Section B above (Steps 0, 1, and 2). This section serves as a reference summary of all required firewall rules.
 
 #### Prerequisites
+
 * **Firewall Alias:** The `Trusted_Lab_Networks` alias was created in **Section B, Step 0**
 * This alias includes: `172.16.0.0/24` (HQ LAN), `172.17.0.0/24` (Branch LAN), `10.200.0.0/24` (WireGuard Tunnel)
 
 #### Required Firewall Rules
 
-**1. WAN Interface (Both Sites)**
+##### 1. WAN Interface (Both Sites)
+
 * **Location:** Firewall > Rules > WAN
 * **Action:** Pass
 * **Protocol:** UDP
@@ -406,7 +416,8 @@ After both sides are configured, verify connectivity:
 * **Description:** Allow WireGuard VPN
 * **Configured in:** Step 1 (HQ) and Step 2 (Branch), step 8
 
-**2. WireGuard Interface (Both Sites)**
+##### 2. WireGuard Interface (Both Sites)
+
 * **Location:** Firewall > Rules > WireGuard (Group) *or* Firewall > Rules > Wireguard interface if assigned
 * **Action:** Pass
 * **Protocol:** IPv4 (Any)
@@ -423,11 +434,11 @@ After both sides are configured, verify connectivity:
 
 ### VPN Tunnel Validation Checklist
 
-- [ ] **WireGuard Status:** Both OPNsense instances show "Last Handshake" within the last 2 minutes
-- [ ] **Tunnel Ping (HQ):** From OPNsenseHQ, ping `10.200.0.2` (Branch tunnel IP)
-- [ ] **Tunnel Ping (Branch):** From OPNsenseBranch, ping `10.200.0.1` (HQ tunnel IP)
-- [ ] **Cross-Site Ping (HQ → Branch):** From OPNsenseHQ, ping `172.17.0.1` (Branch LAN gateway)
-- [ ] **Cross-Site Ping (Branch → HQ):** From OPNsenseBranch, ping `172.16.0.1` (HQ LAN gateway)
+* [ ] **WireGuard Status:** Both OPNsense instances show "Last Handshake" within the last 2 minutes
+* [ ] **Tunnel Ping (HQ):** From OPNsenseHQ, ping `10.200.0.2` (Branch tunnel IP)
+* [ ] **Tunnel Ping (Branch):** From OPNsenseBranch, ping `10.200.0.1` (HQ tunnel IP)
+* [ ] **Cross-Site Ping (HQ → Branch):** From OPNsenseHQ, ping `172.17.0.1` (Branch LAN gateway)
+* [ ] **Cross-Site Ping (Branch → HQ):** From OPNsenseBranch, ping `172.16.0.1` (HQ LAN gateway)
 
 ### Troubleshooting
 
