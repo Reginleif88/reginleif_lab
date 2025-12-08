@@ -179,7 +179,7 @@ If WAN uses DHCP, the upstream router may push its own DNS servers, overriding y
 
 From the OPNsense shell (console or SSH):
 
-```ini
+```sh
 host google.com
 ping 1.1.1.1
 ```
