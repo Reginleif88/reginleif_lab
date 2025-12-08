@@ -66,15 +66,42 @@ Since the web UI isn't reachable yet, configure via the VM Console:
 ## 5. Post-Installation Tuning (Critical for VirtIO)
 Once the Web UI is accessible at `https://172.16.0.1`:
 
-1.  Navigate to **Interfaces > Settings**.
-2.  Check the following to **Disable** hardware acceleration (incompatible with VirtIO):
+1.  **Disable Hardware Offloading** (Interfaces > Settings):
     *   [x] Disable Hardware Checksum Offload
     *   [x] Disable Hardware TCP Segmentation Offload
     *   [x] Disable Hardware Large Receive Offload
-3.  **Reboot** the VM.
+    *   **Reboot** the VM after saving.
+
+2.  **Allow Private Networks on WAN (Lab Environment):**
+
+    Since the lab's WAN connects to a private network (e.g., home LAN), OPNsense will block this traffic by default.
+
+    *   Navigate to **Interfaces → [WAN]**.
+    *   Scroll to **Generic configuration** at the bottom.
+    *   Uncheck **Block private networks**.
+    *   Uncheck **Block bogon networks**.
+    *   Click **Save** and **Apply Changes**.
+
+3.  **Allow ICMP on WAN (Ping Accessibility):**
+
+    *   Navigate to **Firewall → Rules → WAN**.
+    *   Click **Add** (+ button).
+    *   Configure the rule:
+        *   **Action:** Pass
+        *   **Interface:** WAN
+        *   **TCP/IP Version:** IPv4
+        *   **Protocol:** ICMP
+        *   **ICMP type:** any
+        *   **Source:** any
+        *   **Destination:** any
+        *   **Description:** `Allow ICMP (Ping)`
+    *   Click **Save** and **Apply Changes**.
 
 **Why disable hardware offloading?**
 VirtIO virtual NICs can cause packet corruption with offloading enabled. Disabling ensures stability with minimal performance impact in virtualized environments.
+
+**Why allow private/bogon networks on WAN?**
+OPNsense treats RFC1918 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x) as potentially spoofed when arriving on WAN. In production, this is a security feature. In a lab where your "internet" is actually a home network, you must disable these blocks to allow upstream connectivity.
 
 ---
 

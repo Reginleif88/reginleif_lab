@@ -6,7 +6,7 @@ status: completed
 ---
 
 ## Goal
-Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act as a secure gateway for RDP/SSH connections and a central management point for the homelab.
+Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act as a secure gateway for RDP/SSH connections and a central management point for the homelab. This project is optional but useful if using Royal TS for managing connections etc.
 
 ---
 
@@ -115,7 +115,7 @@ The installer usually handles this, but verify the rules exist.
 
 ## 8. Royal TS Client Configuration
 
-**Note:** Full validation requires Road Warrior VPN access. Complete **Project 8 - Remote Access VPN** first, then return here.
+**Note:** Full validation requires Road Warrior VPN access. Complete **Project 9 - Remote Access VPN** first, then return here.
 
 ### 1. Create Management Object
 *Used for viewing server health, logs, and services.*
