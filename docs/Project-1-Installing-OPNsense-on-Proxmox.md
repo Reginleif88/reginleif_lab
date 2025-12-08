@@ -115,21 +115,81 @@ OPNsense treats RFC1918 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x) as pote
 
 ## 6. Configure NAT (Outbound)
 
-OPNsense enables NAT by default, but verify the configuration:
+OPNsense enables NAT by default, but automatic rules may not generate in some configurations. Verify and configure manually if needed:
 
 1. Navigate to **Firewall → NAT → Outbound**.
-2. Mode should be: **Automatic outbound NAT rule generation**.
-3. Verify automatic rules exist for LAN → WAN translation.
+2. Check if **Automatic outbound NAT rule generation** shows rules for `172.16.0.0/24`.
+3. If automatic rules exist, you're done. If not, create a manual rule:
 
-**Manual Rule (if needed):**
+**Manual NAT Rule (Required if no automatic rules exist):**
 
-* Interface: `WAN`
-* Source: `LAN net`
-* Translation/target: `Interface address`
+1. Set mode to **Manual outbound NAT rule generation** and click **Save**.
+2. Click **Add** (+ button).
+3. Configure:
+   * **Interface:** WAN
+   * **Address Family:** IPv4
+   * **Protocol:** any
+   * **Source address:** `172.16.0.0/24`
+   * **Source port:** any
+   * **Destination address:** any
+   * **Destination port:** any
+   * **Translation / target:** Interface address
+   * **Description:** `LAN to WAN NAT`
+4. Click **Save** then **Apply Changes**.
+
+> **Why might automatic rules not generate?** Common causes include: WAN interface missing a gateway definition, interface configuration order during setup, or OPNsense not recognizing the LAN interface type. Manual rules provide explicit control and are easier to troubleshoot.
 
 ---
 
-## 7. Validation
+## 7. Configure DNS Resolver (Unbound)
+
+OPNsense runs Unbound as its DNS resolver. Configure it with reliable upstream DNS servers and prevent DHCP from overriding these settings.
+
+### Prevent DHCP from Overriding DNS
+
+If WAN uses DHCP, the upstream router may push its own DNS servers, overriding your configuration.
+
+1. Navigate to **Interfaces → WAN**.
+2. Scroll to **DHCP client configuration**.
+3. Uncheck **Use DNS servers provided by the DHCP server** (or check "Reject" options).
+4. Click **Save** and **Apply Changes**.
+
+### Configure Upstream DNS Servers
+
+1. Navigate to **System → Settings → General**.
+2. Under **DNS servers**, add:
+   * `1.1.1.1` (Cloudflare - primary)
+   * `8.8.8.8` (Google - secondary)
+3. For each DNS server, set **Use gateway:** to the WAN gateway (ensures DNS queries go out the correct interface).
+4. Uncheck **Allow DNS server list to be overridden by DHCP/PPP on WAN**.
+5. Click **Save**.
+
+### Enable and Configure Unbound
+
+1. Navigate to **Services → Unbound DNS → General**.
+2. Ensure these settings:
+   * **Enable Unbound:** Checked
+   * **Listen Port:** 53
+   * **Network Interfaces:** LAN (and any other internal interfaces)
+   * **DNSSEC:** Checked (optional but recommended)
+   * **DNS Query Forwarding:** Check **Use System Nameservers** to forward to 1.1.1.1/8.8.8.8
+3. Click **Save** and **Apply Changes**.
+
+### Verify DNS Resolution
+
+From the OPNsense shell (console or SSH):
+
+```ini
+host google.com
+ping 1.1.1.1
+```
+
+> **Why configure DNS explicitly?** In lab environments where OPNsense's WAN connects to a home router via DHCP, the router often pushes its own DNS (e.g., ISP DNS or router IP). These may be slow, unreliable, or block certain queries. Using Cloudflare (1.1.1.1) and Google (8.8.8.8) ensures fast, reliable resolution for your lab VMs.
+
+---
+
+## 8. Validation
 
 * **Ping:** From a VM on `vmbr1`, ping `172.16.0.1`.
 * **Internet:** Verify VMs can route to the internet (NAT).
+* **DNS:** From a VM, verify `nslookup google.com 172.16.0.1` resolves correctly.
