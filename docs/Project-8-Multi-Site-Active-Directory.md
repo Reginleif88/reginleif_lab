@@ -231,6 +231,25 @@ repadmin /showrepl
 
 > **Why static IP instead of 127.0.0.1?** Microsoft recommends using the server's actual static IP rather than loopback because `127.0.0.1` doesn't bind to the network stack the same way. During boot or service restart scenarios, loopback may not resolve correctly. Using the static IP ensures consistent DNS behavior and aligns with enterprise best practices.
 
+### Create Reverse DNS Zones
+
+Before finalizing DNS configuration, create reverse lookup zones to enable PTR record registration. Without these zones, DHCP dynamic DNS updates (Project 10) will silently fail for reverse lookups.
+
+**On DC1 (`P-WIN-DC1`):**
+
+```powershell
+# Create reverse zones for both subnets with Forest-wide replication
+Add-DnsServerPrimaryZone -NetworkID "172.16.0.0/24" -ReplicationScope "Forest"
+Add-DnsServerPrimaryZone -NetworkID "172.17.0.0/24" -ReplicationScope "Forest"
+
+# Verify zones were created
+Get-DnsServerZone | Where-Object { $_.IsReverseLookupZone -eq $true }
+```
+
+> **Why Forest replication scope?** Creating both reverse zones on DC1 with `-ReplicationScope "Forest"` ensures DC2 automatically receives the zones through AD replication. No manual zone creation is required on DC2.
+
+> **What are reverse DNS zones and PTR records?** Forward DNS uses A records to resolve names to IPs (`p-win-dc1.reginleif.io` → `172.16.0.10`). Reverse DNS uses PTR (Pointer) records to resolve IPs back to names (`172.16.0.10` → `p-win-dc1.reginleif.io`). PTR records are stored in reverse lookup zones. Many applications and security tools rely on reverse lookups for validation, logging, and spam filtering.
+
 ---
 
 ## 6. Final Validation
