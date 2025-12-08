@@ -48,7 +48,7 @@ PersistentKeepalive = 25
 
 ## 3. Configuration: OPNsenseHQ (The Server)
 
-Add the Home PC as a known peer to the existing WireGuard instance.
+Add the Admin PC as a known peer to the existing `HQ_Instance` (created in Project 7).
 
 1.  **Navigate to:** VPN > WireGuard > **Peers**.
 2.  **Add New Peer:**

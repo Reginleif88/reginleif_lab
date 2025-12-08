@@ -93,7 +93,7 @@ Once the Web UI is accessible at `https://172.16.0.1`:
         *   **Protocol:** ICMP
         *   **ICMP type:** any
         *   **Source:** any
-        *   **Destination:** any
+        *   **Destination:** WAN address
         *   **Description:** `Allow ICMP (Ping)`
     *   Click **Save** and **Apply Changes**.
 
