@@ -15,14 +15,14 @@ Simulate a corporate **"Headquarters vs. Branch"** topology. Connect the Proxmox
 
 ### Topology Overview
 
-| Feature               | Site A (HQ)                | Site B (Branch)            |
-| :-------------------- | :------------------------- | :------------------------- |
-| **Hypervisor**        | Proxmox VE                 | Windows Hyper-V            |
-| **Gateway VM**        | OPNsenseHQ                 | OPNsenseBranch             |
-| **WAN IP**            | `192.168.1.240` (Home LAN) | `192.168.1.245` (Home LAN) |
-| **LAN Subnet**        | **`172.16.0.0/24`**        | **`172.17.0.0/24`**        |
-| **Gateway IP**        | `172.16.0.1`               | `172.17.0.1`               |
-| **Domain Controller** | `P-WIN-DC1` (`172.16.0.10`)        | `H-WIN-DC2` (`172.17.0.10`)            |
+| Feature               | Site A (HQ)                   | Site B (Branch)               |
+| :-------------------- | :---------------------------- | :---------------------------- |
+| **Hypervisor**        | Proxmox VE                    | Windows Hyper-V               |
+| **Gateway VM**        | OPNsenseHQ                    | OPNsenseBranch                |
+| **WAN IP**            | `192.168.1.240` (Home LAN)    | `192.168.1.245` (Home LAN)    |
+| **LAN Subnet**        | **`172.16.0.0/24`**           | **`172.17.0.0/24`**           |
+| **Gateway IP**        | `172.16.0.1`                  | `172.17.0.1`                  |
+| **Domain Controller** | `P-WIN-DC1` (`172.16.0.10`)   | `H-WIN-DC2` (`172.17.0.10`)   |
 
 ---
 
@@ -328,7 +328,7 @@ After both sides are configured, verify connectivity:
    **Do you need it?**
 
    | Scenario | Recommendation |
-   |----------|----------------|
+   | ---------- | ---------------- |
    | Simple site-to-site VPN (this lab) | **Leave disabled** (default) - simpler, avoids potential issues |
    | Multi-WAN with automatic failover | **Enable monitoring** - required for failover logic |
    | Production with SLA requirements | **Enable monitoring** - enables health dashboards and alerts |
@@ -363,7 +363,7 @@ After both sides are configured, verify connectivity:
    **Why this is required:** Once you assign the WireGuard instance to a specific interface, "WireGuard (Group)" rules no longer apply to it. Traffic will be blocked until you create rules on the new interface.
 
    | Rule Location | Applies to |
-   |---------------|------------|
+   | --------------- | ------------ |
    | **WireGuard (Group)** | Only *unassigned* WireGuard instances |
    | **WGVPN** (assigned interface) | Only that specific assigned instance |
 
@@ -443,7 +443,7 @@ After both sides are configured, verify connectivity:
 ### Troubleshooting
 
 | Symptom | Likely Cause | Solution |
-|---------|--------------|----------|
+| --------- | -------------- | ---------- |
 | No handshake | WAN firewall rule missing | Check UDP 51820 is allowed on WAN |
 | Handshake OK, no ping | WireGuard interface rule missing | Add rule on WireGuard (Group) or assigned interface |
 | Ping gateway OK, can't reach LAN hosts | Windows firewall blocking | Continue to Project 8 for Windows firewall config |

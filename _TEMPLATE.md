@@ -7,17 +7,17 @@ status: planned
 
 <!--
 Sites (array - can include multiple):
-  - hq        : HQ site (Proxmox)
-  - branch    : Branch site (Hyper-V)
-  - wg-peers  : WireGuard VPN peers
-  - cloud     : Cloud resources
+  * hq        : HQ site (Proxmox)
+  * branch    : Branch site (Hyper-V)
+  * wg-peers  : WireGuard VPN peers
+  * cloud     : Cloud resources
 
 Example: sites: [hq, branch] for multi-site projects
 
 Status options:
-  - planned     : Not yet started
-  - in-progress : Currently being worked on
-  - completed   : Finished
+  * planned     : Not yet started
+  * in-progress : Currently being worked on
+  * completed   : Finished
 -->
 
 ## Goal
