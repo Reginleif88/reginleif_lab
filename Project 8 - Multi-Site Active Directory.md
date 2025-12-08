@@ -9,7 +9,9 @@ status: planned
 
 Configure Active Directory for multi-site operation after the WireGuard VPN tunnel is established (Project 7). This includes Windows firewall rules, AD Sites and Services, promoting the Branch DC, and configuring DNS for proper replication.
 
-**Prerequisites:**
+---
+
+## Prerequisites
 
 * Project 7 completed (Site-to-Site VPN working)
 * P-WIN-DC1 (HQ) is already a Domain Controller for `reginleif.io`
