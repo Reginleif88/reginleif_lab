@@ -2,9 +2,18 @@ REGINLEIF.IO — Enterprise Homelab
 
 > A multi-site Active Directory infrastructure simulating a corporate headquarters and branch office environment, built to demonstrate real-world sysadmin and network engineering skills, evolving towards a cloud-hybrid architecture.
 
+[![Live Site](https://img.shields.io/badge/Live%20Site-lab.reginleif.io-brightgreen?logo=vercel)](https://lab.reginleif.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Status](https://img.shields.io/badge/Status-Active-green)
 ![Platform](https://img.shields.io/badge/Platform-Proxmox%20%7C%20Hyper--V-orange)
+
+<br>
+
+<p align="center">
+  <strong>
+    <a href="https://lab.reginleif.io/">Explore the full documentation at lab.reginleif.io</a>
+  </strong>
+</p>
 
 ---
 
