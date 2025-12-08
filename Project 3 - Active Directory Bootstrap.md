@@ -6,6 +6,7 @@ status: completed
 ---
 
 ## Goal
+
 Promote the first Domain Controller from project 2 (P-WIN-DC1) using PowerShell.
 
 ---
@@ -32,6 +33,7 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" `
 ---
 
 ## 2. Installation Script
+
 Executed via RDP to allow copy-paste.
 
 ```powershell
@@ -48,23 +50,32 @@ Install-ADDSForest -DomainName "reginleif.io" -DomainNetbiosName "REGINLEIF" -In
 
 Verify the Domain Controller is functioning correctly after promotion.
 
-*   **Ping Gateway:** Confirm network connectivity:
+* **Ping Gateway:** Confirm network connectivity:
+
     ```powershell
     Test-Connection -ComputerName 172.16.0.1 -Count 4
     ```
-*   **Check AD Services:** Verify core services are running:
+
+* **Check AD Services:** Verify core services are running:
+
     ```powershell
     Get-Service ADWS, DNS, Netlogon, NTDS | Select Name, Status
     ```
-*   **Check Shares:** Confirm SYSVOL and NETLOGON exist:
+
+* **Check Shares:** Confirm SYSVOL and NETLOGON exist:
+
     ```powershell
     Get-SmbShare | Where-Object { $_.Name -in 'SYSVOL', 'NETLOGON' }
     ```
-*   **Check Domain Mode:** Verify domain functional level:
+
+* **Check Domain Mode:** Verify domain functional level:
+
     ```powershell
     Get-ADDomain | Select DomainMode
     ```
-*   **DNS Resolution:** Verify DNS is resolving the domain:
+
+* **DNS Resolution:** Verify DNS is resolving the domain:
+
     ```powershell
     Resolve-DnsName reginleif.io
     ```
