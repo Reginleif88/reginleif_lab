@@ -19,7 +19,7 @@ Deploy OPNsense (`OPNsenseBranch`) on Hyper-V to serve as the secure gateway and
 * **Memory:** 4096 MB (4 GB) - **Dynamic Memory Disabled**.
 * **Network Adapter 1:** "External Switch" (Bridged to Physical/Internet).
 * **Network Adapter 2:** "Private/Internal Switch" (LAN - "172.17.0.0/24").
-* **Disk:** 20 GB VHDX (Block size dynamic).
+* **Disk:** 40 GB VHDX (Block size dynamic).
 
 **Downloads:** OPNsense: <https://opnsense.org/download/>
 
@@ -50,13 +50,20 @@ Configure the specific Branch IP details via the VM Console:
 1. **Assign Interfaces:**
     * **WAN:** `hn0` (External/Home Network)
     * **LAN:** `hn1` (Branch-LAN)
-2. **Set Interface IP Address:**
+2. **Set Interface IP Address (WAN):**
+    * Select **WAN**.
+    * IPv4 Configuration Type: `Static`
+    * IPv4: `192.168.1.245`
+    * Mask: `24`
+    * Upstream Gateway: `192.168.1.254` (Home Router in our case)
+    * IPv6: *None*
+3. **Set Interface IP Address (LAN):**
     * Select **LAN**.
     * IPv4: `172.17.0.1`
     * Mask: `24`
     * Gateway: *None*
     * IPv6: *None*
-    * DHCP Server: **Do not enable** (DHCP will be handled by Domain Controllers for AD integration - DNS/DHCP options, dynamic DNS updates, and centralized management).
+    * DHCP Server: **Do not enable** - this can also be disabled during the first-time wizard in the GUI. (DHCP will be handled by Domain Controllers for AD integration - DNS/DHCP options, dynamic DNS updates, and centralized management).
 
 ---
 
@@ -64,45 +71,26 @@ Configure the specific Branch IP details via the VM Console:
 
 Once the Web UI is accessible at `https://172.17.0.1`:
 
-1. **Disable Hardware Offloading** (Interfaces > Settings):
+1. **First-Time Wizard Configuration:**
+
+    During the first-time wizard in the GUI:
+
+    * On the **General** step, set **Hostname** to `OPNsenseBranch`.
+    * On the **Interfaces** step, uncheck **Block private networks** and **Block bogon networks** for the WAN interface (since the lab's WAN connects to a private home LAN).
+
+2. **Disable Hardware Offloading** if not by default (Interfaces > Settings):
     * [x] Disable Hardware Checksum Offload
     * [x] Disable Hardware TCP Segmentation Offload
     * [x] Disable Hardware Large Receive Offload
     * **Reboot** the VM after saving.
 
-2. **Allow Private Networks on WAN (Lab Environment):**
+3. **Disable Hyper-V Time Synchronization:**
+    * In VM Settings → Integration Services, uncheck **Time Synchronization**.
+    * OPNsense uses its own NTP configuration and Hyper-V time sync can cause conflicts or clock drift.
 
-    Since the lab's WAN connects to a private network (e.g., home LAN), OPNsense will block this traffic by default.
+> **Why disable hardware offloading?** Hyper-V virtual NICs can cause packet corruption with offloading enabled. Disabling ensures stability with minimal performance impact in virtualized environments.
 
-    * Navigate to **Interfaces → [WAN]**.
-    * Scroll to **Generic configuration** at the bottom.
-    * Uncheck **Block private networks**.
-    * Uncheck **Block bogon networks**.
-    * Click **Save** and **Apply Changes**.
-
-3. **Allow ICMP on WAN (Ping Accessibility):**
-
-    * Navigate to **Firewall → Rules → WAN**.
-    * Click **Add** (+ button).
-    * Configure the rule:
-        * **Action:** Pass
-        * **Interface:** WAN
-        * **TCP/IP Version:** IPv4
-        * **Protocol:** ICMP
-        * **ICMP type:** any
-        * **Source:** any
-        * **Destination:** WAN address
-        * **Description:** `Allow ICMP (Ping)`
-    * Click **Save** and **Apply Changes**.
-
-4. **Hyper-V Integration Services:**
-    * Ensure "Time Synchronization" is enabled in the VM Settings on the Host.
-
-**Why disable hardware offloading?**
-Hyper-V virtual NICs can cause packet corruption with offloading enabled. Disabling ensures stability with minimal performance impact in virtualized environments.
-
-**Why allow private/bogon networks on WAN?**
-OPNsense treats RFC1918 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x) as potentially spoofed when arriving on WAN. In production, this is a security feature. In a lab where your "internet" is actually a home network, you must disable these blocks to allow upstream connectivity.
+> **Why allow private/bogon networks on WAN?** OPNsense treats RFC1918 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x) as potentially spoofed when arriving on WAN. In production, this is a security feature. In a lab where your "internet" is actually a home network, you must disable these blocks to allow upstream connectivity.
 
 ---
 
@@ -111,7 +99,7 @@ OPNsense treats RFC1918 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x) as pote
 OPNsense enables NAT by default, but automatic rules may not generate in some configurations. Verify and configure manually if needed:
 
 1. Navigate to **Firewall → NAT → Outbound**.
-2. Check if **Automatic outbound NAT rule generation** shows rules for `172.17.0.0/24`.
+2. Check if **Hybrid outbound NAT rule generation** shows rules for `172.17.0.0/24`.
 3. If automatic rules exist, you're done. If not, create a manual rule:
 
 **Manual NAT Rule (Required if no automatic rules exist):**
@@ -163,27 +151,19 @@ If WAN uses DHCP, the upstream router may push its own DNS servers, overriding y
 2. Ensure these settings:
    * **Enable Unbound:** Checked
    * **Listen Port:** 53
-   * **Network Interfaces:** LAN (and any other internal interfaces)
-   * **DNSSEC:** Checked (optional but recommended)
-   * **DNS Query Forwarding:** Check **Use System Nameservers** to forward to 1.1.1.1/8.8.8.8
+   * **Network Interfaces:** All
+   * **DNSSEC:** Checked
 3. Click **Save** and **Apply Changes**.
+
+> **Why DNSSEC?** DNSSEC validates that DNS responses haven't been tampered with, protecting against cache poisoning and spoofing attacks.
 
 ### Verify DNS Resolution
 
-From the OPNsense shell (console or SSH):
+From the OPNsense shell (console or SSH, or use GUI):
 
 ```
-host google.com
+ping google.com
 ping 1.1.1.1
 ```
 
 > **Why configure DNS explicitly?** In lab environments where OPNsense's WAN connects to a home router via DHCP, the router often pushes its own DNS (e.g., ISP DNS or router IP). These may be slow, unreliable, or block certain queries. Using Cloudflare (1.1.1.1) and Google (8.8.8.8) ensures fast, reliable resolution for your lab VMs.
-
----
-
-## 8. Validation
-
-* **Ping:** From a Windows VM on the `Branch-LAN` switch, ping `172.17.0.1`.
-* **Internet:** Verify the VM can browse the internet (NAT through OPNsense).
-* **DNS:** From a VM, verify `nslookup google.com 172.17.0.1` resolves correctly.
-* **Post-Setup:** Finish setting up in the web GUI of OPNsense.

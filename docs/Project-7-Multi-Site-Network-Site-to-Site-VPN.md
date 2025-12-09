@@ -291,12 +291,7 @@ After both sides are configured, verify connectivity:
 
 #### Step 4: Interface Assignment (Optional but Recommended)
 
-**Why assign the interface?**
-
-* Enables static routes and multi-WAN failover using the VPN gateway
-* Provides RRD graphs for tunnel traffic statistics
-* Easier packet capture and debugging with tcpdump
-* Dedicated firewall rules tab instead of "WireGuard (Group)"
+> **Why assign the interface?** Enables static routes and multi-WAN failover using the VPN gateway, provides RRD graphs for tunnel traffic statistics, easier packet capture and debugging with tcpdump, and a dedicated firewall rules tab instead of "WireGuard (Group)".
 
 **On both OPNsenseHQ and OPNsenseBranch:**
 
@@ -381,7 +376,7 @@ After both sides are configured, verify connectivity:
      5. The rule automatically moves to **Firewall > Rules > WGVPN**
    * The WAN rules remain on the WAN interface - only the tunnel traffic rules move
 
-**Note:** Interface assignment (Steps 1-5) is optional but recommended. If you skip interface assignment entirely, rules stay on "WireGuard (Group)" and everything works. But if you DO assign the interface, Step 5 is required or traffic will be blocked.
+> **Note:** Interface assignment (Steps 1-5) is optional but recommended. If you skip interface assignment entirely, rules stay on "WireGuard (Group)" and everything works. But if you DO assign the interface, Step 5 is required or traffic will be blocked.
 
 ---
 
@@ -394,11 +389,7 @@ After both sides are configured, verify connectivity:
   2. **Source Validation:** "Only accept packets from this peer if they originate from these IPs"
 * Common mistake: Forgetting to include the peer's tunnel IP (`10.200.0.x/32`) results in inability to ping the remote gateway
 
-**Why HQ uses `10.200.0.0/24` in Allowed IPs (Branch → HQ):**
-
-* Project 9 (Road Warrior VPN) will allocate client IPs from `10.200.0.0/24`
-* By including the `/24` on Branch, road warrior clients can access Branch resources transparently
-* HQ uses specific `/24` entries because it only needs to route known subnets
+> **Why HQ uses `10.200.0.0/24` in Allowed IPs (Branch → HQ):** Project 9 (Road Warrior VPN) will allocate client IPs from `10.200.0.0/24`. By including the `/24` on Branch, road warrior clients can access Branch resources transparently. HQ uses specific `/24` entries because it only needs to route known subnets.
 
 ### C. Firewall Rules Summary
 
