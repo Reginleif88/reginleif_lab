@@ -20,19 +20,29 @@ Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act
 | **OS Type** | Microsoft Windows 2022 (Desktop Experience) | |
 | **Machine** | q35 | Native PCIe |
 | **BIOS** | OVMF (UEFI) | |
-| **CPU** | Type Host | Enables AES-NI (Critical for encryption performance) |
+| **CPU** | Type Host, 2 Cores | Enables AES-NI (Critical for encryption performance) |
+| **RAM** | 4096 MB (4 GB) | Desktop Experience usually requires more than Core even if not DC|
 | **Controller** | VirtIO SCSI Single | **[x] IO Thread** enabled |
-| **Network** | VirtIO (Paravirtualized) | Required for 10Gbps inter-VM speeds |
+| **Network** | VirtIO (Paravirtualized) | Required for 10Gbps inter-VM speeds (LAN interface of OPNsense) |
 
 ---
 
 ## 2. Prerequisites
 
+> **Note:** With the VirtIO ISO already mounted, run `virtio-win-gt-x64.msi` to install all drivers + networking, then run `virtio-win-guest-tools.exe` to install the QEMU Guest Agent and reboot. Enable the agent in Proxmox under **VM Options > QEMU Guest Agent** if needed.
+
 * **Hostname:** `P-WIN-SRV1`
 * **IP Address:** `172.16.0.11` (Static)
 * **DNS Server:** `172.16.0.10` (`P-WIN-DC1`)
+* **Default Gateway:** `172.16.0.1`
 * **Domain Join:** Ensure server is joined to `reginleif.io`.
 * **Features:** Install **RSAT** (Remote Server Administration Tools) on this server to easily manage AD users/groups without switching to the DC.
+* **Windows Update:** Once domain-joined, the GPO from Project 3 disables automatic updates. If configuring before domain join, disable locally:
+
+```powershell
+Set-Service -Name wuauserv -StartupType Disabled
+Stop-Service -Name wuauserv
+```
 
 ---
 
@@ -136,7 +146,7 @@ The installer usually handles this, but verify the rules exist.
 
 ## 8. Royal TS Client Configuration
 
-**Note:** Full validation requires Road Warrior VPN access. Complete **Project 9 - Remote Access VPN** first, then return here.
+> **Note:** Full validation requires Road Warrior VPN access. Complete **Project 9 - Remote Access VPN** first, then return here.
 
 ### 1. Create Management Object
 
