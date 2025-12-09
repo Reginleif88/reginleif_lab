@@ -76,7 +76,7 @@ Set-DhcpServerv4OptionValue -ScopeId 172.16.0.0 `
     -DnsDomain "reginleif.io"
 ```
 
-**Note:** Lease duration is set to 8 hours, suitable for a lab environment.
+> **Note:** Lease duration is set to 8 hours, suitable for a lab environment.
 
 ---
 
@@ -100,7 +100,7 @@ Set-DhcpServerv4OptionValue -ScopeId 172.17.0.0 `
     -DnsDomain "reginleif.io"
 ```
 
-**Note:** DNS order is reversed - local DC first for faster resolution.
+> **Note:** DNS order is reversed - local DC first for faster resolution.
 
 ---
 
@@ -126,7 +126,7 @@ Set-DhcpServerv4DnsSetting -ComputerName localhost `
 | Non-domain Windows | DHCP registers both A and PTR (if enabled) |
 | Linux/Other | DHCP registers both A and PTR (if enabled) |
 
-**Note:** `UpdateDnsRRForOlderClients` allows DHCP to register records for non-Windows clients.
+> **Note:** `UpdateDnsRRForOlderClients` allows DHCP to register records for non-Windows clients.
 
 ### Enable Conflict Detection (Optional)
 

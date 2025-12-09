@@ -15,22 +15,38 @@ Deploy and prepare the Windows Server 2022 Core VM H-WIN-DC2 on Hyper-V as the s
 
 * **Generation:** Generation 2 (UEFI)
 * **Secure Boot:** Enabled (Windows Server supports Secure Boot on Hyper-V)
-* **Processor:** 2 Virtual Processors
+* **Processor:** 4 Virtual Processors
 * **Memory:** 4096 MB (4 GB) - Dynamic Memory Recommended for efficiency.
 * **Network Adapter 1:** "Branch-LAN" (Internal/Private vSwitch) --> OPNsense LAN
-* **Disk:** 60 GB VHDX (or appropriate size)
+* **Disk:** 80 GB VHDX (or appropriate size)
 
 ---
 
-## 2. Post-Installation (Driver Setup)
+## 2. Post-Installation
 
 Since there is no GUI, ensure necessary drivers are loaded. Hyper-V Integration Services typically handle this automatically for Windows VMs.
+
+### Enable Remote Desktop (sconfig)
+
+From sconfig, enable RDP for easier management:
+
+1. Select **7** (Remote Desktop)
+2. Select **E** to Enable
+3. Select **1** for more secure (Network Level Authentication required)
+
+### Disable Windows Update
 
 ```powershell
 # Exit sconfig to PowerShell
 exit #(option 15)
 powershell
+
+# Disable Windows Update (until centralized update management is configured)
+Set-Service -Name wuauserv -StartupType Disabled
+Stop-Service -Name wuauserv
 ```
+
+> **Why disable Windows Update?** Prevents unexpected reboots and bandwidth consumption during initial lab setup. Re-enable once centralized update management (WSUS, etc.) is configured.
 
 ### Hyper-V Integration Services
 
@@ -64,7 +80,7 @@ Rename-Computer -NewName "H-WIN-DC2" -Restart
 
 After the restart, set a static IP address for the Branch LAN network.
 
-**Note:** Interface name may vary. Run `Get-NetAdapter` to confirm.
+> **Note:** Interface name may vary. Run `Get-NetAdapter` to confirm.
 
 ```powershell
 # Configure static IP address for Branch network
@@ -74,7 +90,7 @@ New-NetIPAddress -InterfaceAlias "Ethernet" `
 
 ### Configure DNS (Temporary)
 
-**Note:** This DNS configuration is temporary. Initially, we point to the OPNsense gateway (`172.17.0.1`) which can provide basic name resolution. Once the site-to-site VPN is established (Project 7), this will be updated to point to the HQ Domain Controller (`172.16.0.10`) for proper Active Directory integration.
+> **Note:** This DNS configuration is temporary. Initially, we point to the OPNsense gateway (`172.17.0.1`) which can provide basic name resolution. Once the site-to-site VPN is established (Project 7), this will be updated to point to the HQ Domain Controller (`172.16.0.10`) for proper Active Directory integration.
 
 ```powershell
 # Set DNS to OPNsense gateway (temporary configuration)

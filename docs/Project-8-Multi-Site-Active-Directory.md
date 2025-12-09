@@ -21,7 +21,7 @@ Configure Active Directory for multi-site operation after the WireGuard VPN tunn
 
 ## 1. Windows Host Firewall Configuration
 
-**Important:** OPNsense firewall rules control traffic at the network gateway level, but Windows Server has its own host-based firewall that applies independently. By default, Windows blocks SMB (File Sharing), RPC (AD Replication), and ICMP (Ping) from "foreign" subnets.
+> **Important:** OPNsense firewall rules control traffic at the network gateway level, but Windows Server has its own host-based firewall that applies independently. By default, Windows blocks SMB (File Sharing), RPC (AD Replication), and ICMP (Ping) from "foreign" subnets.
 
 **The Issue:** Even with a perfectly configured VPN, Windows will block:
 
@@ -65,9 +65,7 @@ Get-NetFirewallRule -DisplayName "Allow ICMPv4*" | Format-Table Name, DisplayNam
 
 ## 2. Active Directory Sites Configuration
 
-**Why Sites Matter:**
-
-Without site configuration, Active Directory assumes all Domain Controllers are on the same fast LAN. This causes problems in multi-site environments:
+> **Why Sites Matter:** Without site configuration, Active Directory assumes all Domain Controllers are on the same fast LAN. This causes problems in multi-site environments:
 
 | Without Sites | With Sites |
 | --------------- | ------------ |
@@ -75,7 +73,7 @@ Without site configuration, Active Directory assumes all Domain Controllers are 
 | Replication happens immediately (floods WAN) | Replication is scheduled and compressed for WAN links |
 | DFS/SYSVOL referrals ignore network topology | Clients access local file servers first |
 
-**AD Sites and Services** (`dssite.msc`) tells AD which subnets belong to which physical locations, so it can make intelligent routing decisions.
+> **AD Sites and Services** (`dssite.msc`) tells AD which subnets belong to which physical locations, so it can make intelligent routing decisions.
 
 ### Site Configuration (RSAT from Windows 11)
 
@@ -103,7 +101,7 @@ After VPN is established, reconfigure DC2's DNS to point to the HQ Domain Contro
 
 **On H-WIN-DC2:**
 
-**Note:** Interface name may vary. Run `Get-NetAdapter` to confirm.
+> **Note:** Interface name may vary. Run `Get-NetAdapter` to confirm.
 
 ```powershell
 # Update DNS to HQ DC (required for domain operations)
@@ -116,7 +114,7 @@ Get-DnsClientServerAddress -InterfaceAlias "Ethernet" -AddressFamily IPv4
 nslookup reginleif.io 172.16.0.10
 ```
 
-**Note:** DNS was initially set to `172.17.0.1` (OPNsense) in Project 6 for basic connectivity. Now that the VPN tunnel is active, DC2 can reach the HQ DC for Active Directory DNS.
+> **Note:** DNS was initially set to `172.17.0.1` (OPNsense) in Project 6 for basic connectivity. Now that the VPN tunnel is active, DC2 can reach the HQ DC for Active Directory DNS.
 
 ---
 
