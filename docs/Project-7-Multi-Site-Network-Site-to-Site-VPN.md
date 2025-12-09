@@ -145,24 +145,37 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
    * **Click Apply Changes**
    * **Why this is needed:** Without this rule, incoming WireGuard handshake packets from Branch will be blocked by the default WAN deny rule
 
-9. **Configure WireGuard Interface Firewall Rule:**
-   * Navigate to **Firewall > Rules > WireGuard (Group)**
-     * **Note:** If you assign the interface later (Step 4), these rules will move to **Firewall > Rules > [InterfaceName]**
-   * **Click Add**
-   * Configure the rule:
-     * **Action:** Pass
-     * **Interface:** WireGuard (Group)
-     * **Direction:** in
-     * **TCP/IP Version:** IPv4
-     * **Protocol:** any
-     * **Source:** `Trusted_Lab_Networks` (select from dropdown)
-     * **Destination:** `Trusted_Lab_Networks` (select from dropdown)
-     * **Description:** `Allow all inter-site traffic through VPN tunnel`
-   * **Click Save**
-   * **Click Apply Changes**
-   * **Why this is critical:** Without this rule, the tunnel handshake succeeds but NO traffic flows through it. OPNsense blocks all traffic on new interfaces by default.
+9. **Assign WireGuard Interface:**
+   * Navigate to **Interfaces > Assignments**
+   * In the "New interface" dropdown, select `wg0` (or your instance device name)
+   * Click the **+** button to add
+   * Click on the new interface name (e.g., "OPT1")
+   * Configure:
+     * **Enable:** ✓ (Check "Enable Interface")
+     * **IPv4 Configuration Type:** None (IP is managed at WireGuard instance level)
+     * **IPv6 Configuration Type:** None
+     * **MSS:** `1380`
+       * **Why MSS clamping?** WireGuard adds ~60-80 bytes overhead per packet. Without this, large TCP packets cause fragmentation, resulting in "zombie connections" where ping works but file transfers or AD replication hang.
+   * Click **Save** and **Apply Changes**
+   * **Why assign the interface?** Creates a dedicated firewall rules tab, enables RRD traffic graphs, and allows gateway creation for advanced routing scenarios
 
-10. **Verify Instance is Running:**
+10. **Configure WireGuard Interface Firewall Rule:**
+    * Navigate to **Firewall > Rules > OPT1**
+    * **Click Add**
+    * Configure the rule:
+      * **Action:** Pass
+      * **Interface:** OPT1
+      * **Direction:** in
+      * **TCP/IP Version:** IPv4
+      * **Protocol:** any
+      * **Source:** `Trusted_Lab_Networks` (select from dropdown)
+      * **Destination:** `Trusted_Lab_Networks` (select from dropdown)
+      * **Description:** `Allow all inter-site traffic through VPN tunnel`
+    * **Click Save**
+    * **Click Apply Changes**
+    * **Why this is critical:** Without this rule, the tunnel handshake succeeds but NO traffic flows through it. OPNsense blocks all traffic on new interfaces by default.
+
+11. **Verify Instance is Running:**
     * Navigate to **VPN > WireGuard > Status**
     * You should see `HQ_Instance` listed with status information
 
@@ -237,24 +250,37 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
    * **Click Apply Changes**
    * **Why this is needed:** Without this rule, incoming WireGuard handshake packets from HQ will be blocked by the default WAN deny rule
 
-9. **Configure WireGuard Interface Firewall Rule:**
-   * Navigate to **Firewall > Rules > WireGuard (Group)**
-     * **Note:** If you assign the interface later (Step 4), these rules will move to **Firewall > Rules > [InterfaceName]**
-   * **Click Add**
-   * Configure the rule:
-     * **Action:** Pass
-     * **Interface:** WireGuard (Group)
-     * **Direction:** in
-     * **TCP/IP Version:** IPv4
-     * **Protocol:** any
-     * **Source:** `Trusted_Lab_Networks` (select from dropdown)
-     * **Destination:** `Trusted_Lab_Networks` (select from dropdown)
-     * **Description:** `Allow all inter-site traffic through VPN tunnel`
-   * **Click Save**
-   * **Click Apply Changes**
-   * **Why this is critical:** Without this rule, the tunnel handshake succeeds but NO traffic flows through it. OPNsense blocks all traffic on new interfaces by default.
+9. **Assign WireGuard Interface:**
+   * Navigate to **Interfaces > Assignments**
+   * In the "New interface" dropdown, select `wg0` (or your instance device name)
+   * Click the **+** button to add
+   * Click on the new interface name (e.g., "OPT1")
+   * Configure:
+     * **Enable:** ✓ (Check "Enable Interface")
+     * **IPv4 Configuration Type:** None (IP is managed at WireGuard instance level)
+     * **IPv6 Configuration Type:** None
+     * **MSS:** `1380`
+       * **Why MSS clamping?** WireGuard adds ~60-80 bytes overhead per packet. Without this, large TCP packets cause fragmentation, resulting in "zombie connections" where ping works but file transfers or AD replication hang.
+   * Click **Save** and **Apply Changes**
+   * **Why assign the interface?** Creates a dedicated firewall rules tab, enables RRD traffic graphs, and allows gateway creation for advanced routing scenarios
 
-10. **Verify Tunnel Establishment:**
+10. **Configure WireGuard Interface Firewall Rule:**
+    * Navigate to **Firewall > Rules > OPT1**
+    * **Click Add**
+    * Configure the rule:
+      * **Action:** Pass
+      * **Interface:** OPT1
+      * **Direction:** in
+      * **TCP/IP Version:** IPv4
+      * **Protocol:** any
+      * **Source:** `Trusted_Lab_Networks` (select from dropdown)
+      * **Destination:** `Trusted_Lab_Networks` (select from dropdown)
+      * **Description:** `Allow all inter-site traffic through VPN tunnel`
+    * **Click Save**
+    * **Click Apply Changes**
+    * **Why this is critical:** Without this rule, the tunnel handshake succeeds but NO traffic flows through it. OPNsense blocks all traffic on new interfaces by default.
+
+11. **Verify Tunnel Establishment:**
     * Navigate to **VPN > WireGuard > Status**
     * Look for `Branch_Instance` with a **Last Handshake** timestamp
     * If it shows "Never" or a time >2 minutes ago:
@@ -289,36 +315,22 @@ After both sides are configured, verify connectivity:
 
 ---
 
-#### Step 4: Interface Assignment (Optional but Recommended)
+#### Step 4: Gateway Configuration (Optional)
 
-> **Why assign the interface?** Enables static routes and multi-WAN failover using the VPN gateway, provides RRD graphs for tunnel traffic statistics, easier packet capture and debugging with tcpdump, and a dedicated firewall rules tab instead of "WireGuard (Group)".
+> **Note:** Interface assignment and MSS clamping were completed in Step 1 (HQ) and Step 2 (Branch) during step 9. This section covers optional gateway configuration for advanced routing scenarios.
 
 **On both OPNsenseHQ and OPNsenseBranch:**
 
-1. **Navigate to Interfaces > Assignments**
-
-2. **Add WireGuard Interface:**
-   * In the "New interface" dropdown, select `wg0` (or your instance device name)
-   * Click the **+** button to add
-
-3. **Configure the Interface:**
-   * Click on the new interface name (e.g., "OPT1")
-   * **Enable:** ✓ (Check "Enable Interface")
-   * **Description:** `WGVPN` (or any meaningful name)
-   * **IPv4 Configuration Type:** None
-     * **Why None?** IP addresses are managed at the WireGuard instance level
-   * **IPv6 Configuration Type:** None
+1. **Configure Dynamic Gateway (Optional):**
+   * Navigate to **Interfaces > [OPT1]**
    * **Dynamic gateway:** ✓ (Check this to auto-create a gateway)
-   * **MSS:** `1380`
-     * **Why MSS clamping?** WireGuard adds ~60-80 bytes of overhead per packet. Without MSS clamping, full 1500-byte TCP packets exceed the tunnel's effective MTU, causing fragmentation or drops. This results in "zombie connections" where ping works but file transfers, AD replication, or large queries hang indefinitely.
-   * Click **Save**
-   * Click **Apply Changes**
+   * Click **Save** and **Apply Changes**
 
-4. **Gateway Monitoring (Optional):**
+2. **Gateway Monitoring (Optional):**
 
    After enabling "Dynamic gateway" on the interface, OPNsense creates a gateway entry. **Gateway monitoring is disabled by default** for WireGuard gateways in OPNsense 25.x, which is the recommended setting for this lab.
 
-   **If no gateway was created:** Navigate to **System > Gateways > Configuration**, click **Add**, select your WGVPN interface, and set the gateway IP to the remote peer's tunnel IP (e.g., `10.200.0.2` for HQ, `10.200.0.1` for Branch).
+   **If no gateway was created:** Navigate to **System > Gateways > Configuration**, click **Add**, select your OPT1 interface, and set the gateway IP to the remote peer's tunnel IP (e.g., `10.200.0.2` for HQ, `10.200.0.1` for Branch).
 
    **What is gateway monitoring for?**
 
@@ -337,7 +349,7 @@ After both sides are configured, verify connectivity:
    **Verify Monitoring is Disabled (Default - Recommended for this lab)**
 
    * Navigate to **System > Gateways > Configuration**
-   * Find the gateway (e.g., `WGVPN_GWv4`)
+   * Find the gateway (e.g., `OPT1_GWv4`)
    * Click **Edit** (pencil icon)
    * Verify **"Disable Gateway Monitoring"** is checked (should be by default)
 
@@ -346,7 +358,7 @@ After both sides are configured, verify connectivity:
    **Enable Gateway Monitoring (For failover scenarios)**
 
    * Navigate to **System > Gateways > Configuration**
-   * Find the gateway (e.g., `WGVPN_GWv4`)
+   * Find the gateway (e.g., `OPT1_GWv4`)
    * Click **Edit** (pencil icon)
    * Click **Advanced Mode** (toggle at top of page) to reveal monitoring options
    * Uncheck **"Disable Gateway Monitoring"**
@@ -358,25 +370,6 @@ After both sides are configured, verify connectivity:
    > **Troubleshooting tip:** If the tunnel handshake is working (check VPN > WireGuard > Status) but no traffic flows, check that gateway monitoring is either disabled or has a valid Monitor IP configured.
    >
    > **Known Issue:** There are [active bugs in OPNsense 25.x](https://github.com/opnsense/core/issues/8990) related to gateway monitoring and WireGuard failover. In multi-WAN scenarios, gateways may incorrectly report as "up" when down, or disabled gateways may be selected as default. If you experience unexpected failover behavior, a firewall reboot may be required as a temporary workaround.
-
-5. **Update Firewall Rules (Required):**
-
-   **Why this is required:** Once you assign the WireGuard instance to a specific interface, "WireGuard (Group)" rules no longer apply to it. Traffic will be blocked until you create rules on the new interface.
-
-   | Rule Location | Applies to |
-   | :--------------- | :------------ |
-   | **WireGuard (Group)** | Only *unassigned* WireGuard instances |
-   | **WGVPN** (assigned interface) | Only that specific assigned instance |
-
-   * **To move existing rules:**
-     1. Navigate to **Firewall > Rules > WireGuard (Group)**
-     2. Click **Edit** (pencil icon) on the rule
-     3. Change **Interface** from "WireGuard (Group)" to "WGVPN"
-     4. Click **Save** and **Apply Changes**
-     5. The rule automatically moves to **Firewall > Rules > WGVPN**
-   * The WAN rules remain on the WAN interface - only the tunnel traffic rules move
-
-> **Note:** Interface assignment (Steps 1-5) is optional but recommended. If you skip interface assignment entirely, rules stay on "WireGuard (Group)" and everything works. But if you DO assign the interface, Step 5 is required or traffic will be blocked.
 
 ---
 
@@ -415,13 +408,13 @@ After both sides are configured, verify connectivity:
 
 ##### 2. WireGuard Interface (Both Sites)
 
-* **Location:** Firewall > Rules > WireGuard (Group) *or* Firewall > Rules > Wireguard interface if assigned
+* **Location:** Firewall > Rules > OPT1
 * **Action:** Pass
 * **Protocol:** IPv4 (Any)
 * **Source:** `Trusted_Lab_Networks`
 * **Destination:** `Trusted_Lab_Networks`
 * **Description:** Allow all inter-site traffic through VPN tunnel
-* **Configured in:** Step 1 (HQ) and Step 2 (Branch), step 9
+* **Configured in:** Step 1 (HQ) and Step 2 (Branch), step 10
 
 > **Note:** The WireGuard interface rule permits all inter-site traffic including AD replication (LDAP, Kerberos, RPC), file sharing (SMB), DNS queries, and road warrior VPN access. The alias ensures traffic from any trusted network can reach any other trusted network.
 

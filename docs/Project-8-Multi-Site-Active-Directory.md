@@ -133,7 +133,7 @@ Kerberos authentication, the backbone of Active Directory security, uses timesta
 
 **Active Directory Time Hierarchy:**
 
-```
+```text
 External NTP (pool.ntp.org)
         ↓
    PDC Emulator (DC1) ─── Authoritative time source for domain
@@ -166,7 +166,7 @@ w32tm /query /status
 
 **Expected output from `/query/status`:**
 
-```
+```text
 Source: 0.pool.ntp.org (or similar)
 Stratum: 2 or 3
 ```
@@ -303,7 +303,6 @@ Get-DnsServerZone | Where-Object { $_.IsReverseLookupZone -eq $true }
 ```
 
 > **Why Forest replication scope?** Creating both reverse zones on DC1 with `-ReplicationScope "Forest"` ensures DC2 automatically receives the zones through AD replication. No manual zone creation is required on DC2.
-
 > **What are reverse DNS zones and PTR records?** Forward DNS uses A records to resolve names to IPs (`p-win-dc1.reginleif.io` → `172.16.0.10`). Reverse DNS uses PTR (Pointer) records to resolve IPs back to names (`172.16.0.10` → `p-win-dc1.reginleif.io`). PTR records are stored in reverse lookup zones. Many applications and security tools rely on reverse lookups for validation, logging, and spam filtering.
 
 ### Configure DNS Forwarders for External Resolution
@@ -363,7 +362,7 @@ w32tm /query /source
 
 **Expected output:**
 
-```
+```text
 P-WIN-DC1.reginleif.io
 ```
 

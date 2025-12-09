@@ -96,7 +96,6 @@ Once the Web UI is accessible at `https://172.16.0.1` (access it with another VM
     * **Reboot** the VM after saving.
 
 > **Why disable hardware offloading?** VirtIO virtual NICs can cause packet corruption with offloading enabled. Disabling ensures stability with minimal performance impact in virtualized environments.
-
 > **Why allow private/bogon networks on WAN?** OPNsense treats RFC1918 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x) as potentially spoofed when arriving on WAN. In production, this is a security feature. In a lab where your "internet" is actually a home network, you must disable these blocks to allow upstream connectivity.
 
 ---

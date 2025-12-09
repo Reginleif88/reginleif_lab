@@ -19,7 +19,7 @@ Deploy OPNsense (`OPNsenseBranch`) on Hyper-V to serve as the secure gateway and
 * **Memory:** 4096 MB (4 GB) - **Dynamic Memory Disabled**.
 * **Network Adapter 1:** "External Switch" (Bridged to Physical/Internet).
 * **Network Adapter 2:** "Private/Internal Switch" (LAN - "172.17.0.0/24").
-* **Disk:** 40 GB VHDX (Block size dynamic).
+* **Disk:** 40 GB VHDX.
 
 **Downloads:** OPNsense: <https://opnsense.org/download/>
 
@@ -30,7 +30,7 @@ Deploy OPNsense (`OPNsenseBranch`) on Hyper-V to serve as the secure gateway and
 Before booting, ensure Hyper-V has the correct Virtual Switches:
 
 1. **External vSwitch:** Mapped to the Physical NIC (WAN).
-2. **Private vSwitch:** Named `Branch-LAN` (Isolated, no host sharing required for pure isolation, or "Internal" if Host needs access).
+2. **Private vSwitch:** Named `Branch-LAN` (Isolated, no host sharing).
 
 ---
 
@@ -89,7 +89,6 @@ Once the Web UI is accessible at `https://172.17.0.1`:
     * OPNsense uses its own NTP configuration and Hyper-V time sync can cause conflicts or clock drift.
 
 > **Why disable hardware offloading?** Hyper-V virtual NICs can cause packet corruption with offloading enabled. Disabling ensures stability with minimal performance impact in virtualized environments.
-
 > **Why allow private/bogon networks on WAN?** OPNsense treats RFC1918 addresses (10.x.x.x, 172.16-31.x.x, 192.168.x.x) as potentially spoofed when arriving on WAN. In production, this is a security feature. In a lab where your "internet" is actually a home network, you must disable these blocks to allow upstream connectivity.
 
 ---
