@@ -2,7 +2,7 @@
 title: "Project 8: Multi-Site Active Directory Configuration"
 tags: [active-directory, windows-server, dns, replication]
 sites: [hq, branch]
-status: planned
+status: completed
 ---
 
 ## Goal
@@ -73,6 +73,49 @@ Get-NetFirewallRule -DisplayName "Allow ICMPv4*" | Format-Table Name, DisplayNam
 | Replication happens immediately (floods WAN) | Replication is scheduled and compressed for WAN links |
 | DFS/SYSVOL referrals ignore network topology | Clients access local file servers first |
 
+### Understanding AD Replication
+
+Active Directory uses **multi-master replication** - any Domain Controller can accept changes (new users, password resets, GPO edits), and those changes automatically propagate to all other DCs. This differs from single-master systems where only one server accepts writes.
+
+**What gets replicated:**
+
+| Partition | Contents | Scope |
+|-----------|----------|-------|
+| Domain | Users, computers, groups, GPOs | All DCs in the domain |
+| Configuration | Sites, subnets, replication topology | All DCs in the forest |
+| Schema | Object classes, attributes definitions | All DCs in the forest |
+| DomainDnsZones | AD-integrated DNS records for domain | All DCs running DNS in the domain |
+| ForestDnsZones | AD-integrated DNS records for forest | All DCs running DNS in the forest |
+
+**How replication works:**
+
+1. A change is made on DC1 (e.g., new user created)
+2. DC1 assigns the change a **USN** (Update Sequence Number) and timestamp
+3. DC1 notifies its replication partners that changes are available
+4. Partner DCs request the changes and apply them locally
+5. Each DC tracks what it has received using **high watermark vectors**
+
+**Intra-site vs Inter-site replication:**
+
+| Intra-site (same site) | Inter-site (across sites) |
+|------------------------|---------------------------|
+| Near-instant notification | Scheduled intervals (default: 180 min) |
+| Uncompressed traffic | Compressed to save bandwidth |
+| Assumes fast LAN | Assumes slow WAN link |
+
+**Troubleshooting commands:**
+
+```powershell
+# Force replication across all partitions and sites
+repadmin /syncall /AdeP
+
+# Show replication status and partners
+repadmin /showrepl
+
+# Show replication summary for all DCs
+repadmin /replsummary
+```
+
 > **AD Sites and Services** (`dssite.msc`) tells AD which subnets belong to which physical locations, so it can make intelligent routing decisions.
 
 ### Site Configuration (RSAT from Windows 11)
@@ -97,7 +140,23 @@ Get-NetFirewallRule -DisplayName "Allow ICMPv4*" | Format-Table Name, DisplayNam
 
 ## 3. Prepare DC2 for Domain Join
 
-After VPN is established, reconfigure DC2's DNS to point to the HQ Domain Controller.
+After VPN is established, configure DC2's timezone and DNS settings before joining the domain.
+
+### Set Timezone DC2
+
+**On H-WIN-DC2:**
+
+```powershell
+# Check current timezone
+Get-TimeZone
+
+# Set timezone to Paris
+Set-TimeZone -Id "Romance Standard Time"
+```
+
+> **Note:** Timezone does not sync via Active Directory. Each server must be configured individually based on its physical location. In multi-site deployments, DCs in different regions may have different timezones - this is normal and does not affect AD replication (which uses UTC internally).
+
+### Configure DNS
 
 **On H-WIN-DC2:**
 
@@ -118,7 +177,30 @@ nslookup reginleif.io 172.16.0.10
 
 ---
 
-## 4. Configure DC1 NTP (Before Promotion)
+## 4. Configure DC1 Time Settings (Before Promotion)
+
+### Set Timezone DC1
+
+Before configuring NTP, ensure DC1 has the correct timezone set. While AD uses UTC internally for Kerberos and replication, proper timezone configuration ensures accurate local timestamps in logs, event viewer, and scheduled tasks.
+
+**On DC1 (`P-WIN-DC1`):**
+
+```powershell
+# Check current timezone
+Get-TimeZone
+
+# Set timezone to Paris
+Set-TimeZone -Id "Romance Standard Time"
+```
+
+> **Proxmox Time Sync Warning:** Windows expects the hardware clock (RTC) to use local time, but Proxmox defaults to UTC. This mismatch causes Kerberos time skew errors, breaking RDP and domain authentication. Additionally, the QEMU Guest Agent can interfere with Windows time synchronization. On your **Proxmox host**, enable local time for all Windows VMs:
+>
+> ```bash
+> # Replace VMID with your VM ID (e.g., 100)
+> qm set VMID -localtime 1
+> ```
+>
+> Reboot the VM after applying this change. If issues persist, check if the QEMU Guest Agent is installed and consider disabling its time sync functionality.
 
 ### Why Time Sync Must Be Configured First
 
@@ -205,6 +287,37 @@ Get-ADDomainController -Identity H-WIN-DC2
 # Verify SYSVOL/NETLOGON shares
 Get-SmbShare | Where-Object { $_.Name -match "SYSVOL|NETLOGON" }
 ```
+
+### Configure DC2 Time Synchronization
+
+After promotion, DC2 must sync time from the domain hierarchy (PDC Emulator on DC1), not an external source or local clock.
+
+**On DC2 (`H-WIN-DC2`):**
+
+```powershell
+# Configure DC2 to sync from domain hierarchy
+w32tm /config /syncfromflags:DOMHIER /update
+
+# Restart the Windows Time service
+Restart-Service w32time
+
+# Force immediate sync
+w32tm /resync /force
+
+# Verify configuration
+w32tm /query /status
+```
+
+**Expected output:**
+
+```text
+Source: P-WIN-DC1.reginleif.io
+Stratum: 3 or 4 (one level higher than DC1)
+```
+
+> **Why DOMHIER?** The `DOMHIER` (domain hierarchy) flag tells the Windows Time service to find and sync from the PDC Emulator role holder. This ensures all DCs maintain consistent time through the AD hierarchy rather than independently syncing to external sources, which could cause clock drift between DCs.
+>
+> **Hyper-V Warning:** If DC2 shows `Source: VM IC Time Synchronization Provider`, Hyper-V Integration Services is overriding domain time sync. Disable it in Hyper-V Manager → VM Settings → Integration Services → uncheck **Time Synchronization**, then run `Restart-Service w32time` and `w32tm /resync /force` inside the VM.
 
 ---
 
@@ -303,11 +416,35 @@ Get-DnsServerZone | Where-Object { $_.IsReverseLookupZone -eq $true }
 ```
 
 > **Why Forest replication scope?** Creating both reverse zones on DC1 with `-ReplicationScope "Forest"` ensures DC2 automatically receives the zones through AD replication. No manual zone creation is required on DC2.
+>
 > **What are reverse DNS zones and PTR records?** Forward DNS uses A records to resolve names to IPs (`p-win-dc1.reginleif.io` → `172.16.0.10`). Reverse DNS uses PTR (Pointer) records to resolve IPs back to names (`172.16.0.10` → `p-win-dc1.reginleif.io`). PTR records are stored in reverse lookup zones. Many applications and security tools rely on reverse lookups for validation, logging, and spam filtering.
 
 ### Configure DNS Forwarders for External Resolution
 
-AD DNS servers are authoritative for the `reginleif.io` zone but cannot resolve external domains (like `google.com`) without forwarders. Configure each DC to forward external queries to its local OPNsense gateway, which runs Unbound DNS resolver.
+AD DNS servers are authoritative for the `reginleif.io` zone but cannot resolve external domains (like `google.com`) without forwarders.
+
+**How DNS resolution works with forwarders:**
+
+```text
+Domain client queries "google.com"
+        ↓
+    Local DC (DNS Server)
+        ↓
+    "Is this reginleif.io?" → No
+        ↓
+    Forward to OPNsense (Unbound)
+        ↓
+    OPNsense resolves via root servers
+        ↓
+    Response returned to client
+```
+
+**Why OPNsense instead of public DNS?**
+
+* Keeps external DNS traffic local to each site (no WAN dependency)
+* OPNsense runs Unbound, a full recursive resolver
+* Enables DNS filtering/logging at the gateway if needed
+* Each site is self-sufficient for external resolution
 
 **On DC1 (`P-WIN-DC1`):**
 
@@ -339,25 +476,20 @@ Resolve-DnsName google.com
 Test-Connection 1.1.1.1
 ```
 
-> **Why use OPNsense as forwarder?** Each DC forwards to its local OPNsense gateway rather than directly to public DNS (8.8.8.8, 1.1.1.1). This keeps external DNS traffic local to each site, reduces WAN dependency, and allows OPNsense to provide DNS filtering/logging if configured. OPNsense runs Unbound, a full recursive resolver, so it can resolve any public domain.
-
 ---
 
 ## 7. Verify DC2 Time Synchronization
 
-After promotion, DC2 should automatically sync time from the domain hierarchy (ultimately from DC1, the PDC Emulator configured in Section 4).
+Confirm DC2 is syncing from DC1 (configured in Section 5).
 
 **On DC2 (`H-WIN-DC2`):**
 
 ```powershell
-# Check current time source
-w32tm /query /status
-
-# Force rediscovery of time source
-w32tm /resync /rediscover
-
-# Verify it syncs from domain hierarchy
+# Verify time source
 w32tm /query /source
+
+# Check time offset between DCs (should be < 1 second)
+w32tm /stripchart /computer:P-WIN-DC1 /samples:3 /dataonly
 ```
 
 **Expected output:**
@@ -366,22 +498,7 @@ w32tm /query /source
 P-WIN-DC1.reginleif.io
 ```
 
-If DC2 shows "Local CMOS Clock" or "Free-running System Clock", force it to use the domain hierarchy:
-
-```powershell
-# Reset DC2 to use domain hierarchy (NT5DS = domain hierarchy for DCs)
-w32tm /config /syncfromflags:domhier /update
-Restart-Service w32time
-w32tm /resync /rediscover
-```
-
-**Verify time offset between DCs (should be < 1 second):**
-
-```powershell
-w32tm /stripchart /computer:P-WIN-DC1 /samples:3 /dataonly
-```
-
-> **Hyper-V Time Sync Warning:** Hyper-V has a "Time Synchronization" integration service that can conflict with AD time sync. For DC2 running on Hyper-V, consider disabling this in the VM settings (Integration Services → uncheck Time Synchronization) to let AD control time. Alternatively, leave it enabled but understand that AD time sync takes precedence for domain-joined machines.
+> **Troubleshooting:** If DC2 shows "Local CMOS Clock" or "Free-running System Clock", re-run the configuration commands from Section 5.
 
 ---
 
