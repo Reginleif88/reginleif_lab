@@ -48,7 +48,7 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" `
 
 ## 2. Installation Script
 
-Cab be executed via RDP to allow copy-paste.
+Can be executed via RDP to allow copy-paste.
 
 ```powershell
 # Install AD Bits
