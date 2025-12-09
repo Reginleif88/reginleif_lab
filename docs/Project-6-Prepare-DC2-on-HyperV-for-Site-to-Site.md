@@ -39,7 +39,6 @@ From sconfig, enable RDP for easier management:
 ```powershell
 # Exit sconfig to PowerShell
 exit #(option 15)
-powershell
 
 # Disable Windows Update (until centralized update management is configured)
 Set-Service -Name wuauserv -StartupType Disabled
@@ -47,21 +46,6 @@ Stop-Service -Name wuauserv
 ```
 
 > **Why disable Windows Update?** Prevents unexpected reboots and bandwidth consumption during initial lab setup. Re-enable once centralized update management (WSUS, etc.) is configured.
-
-### Hyper-V Integration Services
-
-On our HyperV Host :
-
-```powershell
-# Check Integration Services status (optional, usually managed by Hyper-V)
-Get-VMIntegrationService -VMName "H-WIN-DC2"
-```
-
-### Verify Network Driver is loaded
-
-```powershell
-Get-NetAdapter
-```
 
 ---
 
@@ -134,4 +118,4 @@ Verify the network configuration is correct before proceeding.
     Get-DnsClientServerAddress -InterfaceAlias "Ethernet"
     ```
 
-**Action Required:** Complete Project 7 (Site-to-Site VPN) before attempting to promote this server to a Domain Controller.
+**Action Required:** Complete Project 7 (Site-to-Site VPN) before attempting to promote this server to a Domain Controller in Project 8.

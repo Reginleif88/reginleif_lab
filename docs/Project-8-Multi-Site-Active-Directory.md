@@ -133,7 +133,7 @@ Kerberos authentication, the backbone of Active Directory security, uses timesta
 
 **Active Directory Time Hierarchy:**
 
-```md
+```text
 External NTP (pool.ntp.org)
         ↓
    PDC Emulator (DC1) ─── Authoritative time source for domain
@@ -166,7 +166,7 @@ w32tm /query /status
 
 **Expected output from `/query/status`:**
 
-```md
+```text
 Source: 0.pool.ntp.org (or similar)
 Stratum: 2 or 3
 ```
@@ -362,7 +362,7 @@ w32tm /query /source
 
 **Expected output:**
 
-```md
+```text
 P-WIN-DC1.reginleif.io
 ```
 
