@@ -110,10 +110,31 @@ Create a Group Policy to disable automatic updates for all domain-joined machine
 # Create new GPO
 New-GPO -Name "Disable Windows Update" -Comment "Temporary: Disable updates until WSUS is configured"
 
-# Configure the GPO to disable automatic updates
+# Disable automatic updates
 Set-GPRegistryValue -Name "Disable Windows Update" `
     -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU" `
     -ValueName "NoAutoUpdate" `
+    -Type DWord `
+    -Value 1
+
+# Disable access to Windows Update (prevents manual checks too)
+Set-GPRegistryValue -Name "Disable Windows Update" `
+    -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" `
+    -ValueName "DisableWindowsUpdateAccess" `
+    -Type DWord `
+    -Value 1
+
+# Remove access to "Check for updates" in Settings
+Set-GPRegistryValue -Name "Disable Windows Update" `
+    -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" `
+    -ValueName "SetDisableUXWUAccess" `
+    -Type DWord `
+    -Value 1
+
+# Prevent connecting to Windows Update Internet locations
+Set-GPRegistryValue -Name "Disable Windows Update" `
+    -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate" `
+    -ValueName "DoNotConnectToWindowsUpdateInternetLocations" `
     -Type DWord `
     -Value 1
 
