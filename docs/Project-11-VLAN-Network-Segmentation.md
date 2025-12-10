@@ -65,7 +65,6 @@ Each VLAN follows a consistent scheme:
 
 > [!NOTE]
 > The third octet matches the VLAN ID for easy mental mapping:
->
 > - VLAN 5 = 172.16.**5**.0/24 (HQ) or 172.17.**5**.0/24 (Branch)
 > - VLAN 10 = 172.16.**10**.0/24 (HQ) or 172.17.**10**.0/24 (Branch)
 
@@ -301,8 +300,8 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.16.5.
 Remove-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "P-WIN-DC1" -RRType A -Force
 Add-DnsServerResourceRecordA -ZoneName "reginleif.io" -Name "P-WIN-DC1" -IPv4Address 172.16.5.10
 
-# The new PTR record will be created in the reverse lookup zone defined in Section 5.
-# You may need to manually remove the old PTR record from the old "0.16.172.in-addr.arpa" zone.
+# Update reverse zone (PTR record)
+Add-DnsServerPrimaryZone -NetworkID "172.16.5.0/24" -ReplicationScope "Forest"
 ```
 
 ### C. Migrate P-WIN-SRV1 to VLAN 20
@@ -319,9 +318,9 @@ P-WIN-SRV1 (Royal Server) moves from Infrastructure to the Servers VLAN:
 
 ```powershell
 # [P-WIN-SRV1]
-# Change IP from 172.16.0.11 to 172.16.20.11
+# Change IP from 172.16.5.11 to 172.16.20.11
 New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 172.16.20.11 -PrefixLength 24 -DefaultGateway 172.16.20.1
-Remove-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 172.16.0.11 -Confirm:$false
+Remove-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 172.16.5.11 -Confirm:$false
 
 # Update DNS to point to DCs (new VLAN 5 IPs)
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.16.5.10,172.17.5.10
@@ -404,8 +403,8 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.17.5.
 Remove-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "H-WIN-DC2" -RRType A -Force
 Add-DnsServerResourceRecordA -ZoneName "reginleif.io" -Name "H-WIN-DC2" -IPv4Address 172.17.5.10
 
-# The new PTR record will be created in the reverse lookup zone defined in Section 5.
-# You may need to manually remove the old PTR record from the old "0.17.172.in-addr.arpa" zone.
+# Update reverse zone (PTR record)
+Add-DnsServerPrimaryZone -NetworkID "172.17.5.0/24" -ReplicationScope "Forest"
 ```
 
 ### C. Assigning VMs to VLANs
@@ -432,9 +431,31 @@ Or via GUI:
 
 ## 4. DHCP Configuration
 
-Create DHCP scopes for the Clients VLAN at each site. Infrastructure, Server, and Management VLANs use static IP assignment only.
+Create DHCP scopes for the Clients VLAN at each site. Update existing Infrastructure VLAN scopes to use the new VLAN 5 subnet.
 
-### A. HQ Client VLAN Scope (P-WIN-DC1)
+### A. Update Infrastructure VLAN Scope (P-WIN-DC1)
+
+```powershell
+# [P-WIN-DC1]
+# Remove old Infrastructure scope (172.16.0.0/24)
+Remove-DhcpServerv4Scope -ScopeId 172.16.0.0 -Force
+
+# Create new Infrastructure scope (172.16.5.0/24)
+Add-DhcpServerv4Scope -Name "HQ-Infrastructure-VLAN5" `
+    -StartRange 172.16.5.30 `
+    -EndRange 172.16.5.254 `
+    -SubnetMask 255.255.255.0 `
+    -LeaseDuration 0.08:00:00 `
+    -State Active
+
+# Set scope options
+Set-DhcpServerv4OptionValue -ScopeId 172.16.5.0 `
+    -Router 172.16.5.1 `
+    -DnsServer 172.16.5.10,172.17.5.10 `
+    -DnsDomain "reginleif.io"
+```
+
+### B. HQ Client VLAN Scope (P-WIN-DC1)
 
 ```powershell
 # [P-WIN-DC1]
@@ -453,7 +474,29 @@ Set-DhcpServerv4OptionValue -ScopeId 172.16.10.0 `
     -DnsDomain "reginleif.io"
 ```
 
-### B. Branch Client VLAN Scope (H-WIN-DC2)
+### C. Update Infrastructure VLAN Scope (H-WIN-DC2)
+
+```powershell
+# [H-WIN-DC2]
+# Remove old Infrastructure scope (172.17.0.0/24)
+Remove-DhcpServerv4Scope -ScopeId 172.17.0.0 -Force
+
+# Create new Infrastructure scope (172.17.5.0/24)
+Add-DhcpServerv4Scope -Name "Branch-Infrastructure-VLAN5" `
+    -StartRange 172.17.5.30 `
+    -EndRange 172.17.5.254 `
+    -SubnetMask 255.255.255.0 `
+    -LeaseDuration 0.08:00:00 `
+    -State Active
+
+# Set scope options
+Set-DhcpServerv4OptionValue -ScopeId 172.17.5.0 `
+    -Router 172.17.5.1 `
+    -DnsServer 172.17.5.10,172.16.5.10 `
+    -DnsDomain "reginleif.io"
+```
+
+### D. Branch Client VLAN Scope (H-WIN-DC2)
 
 ```powershell
 # [H-WIN-DC2]
