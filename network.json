@@ -4,10 +4,18 @@
   "vlans": {
     "1": {
       "id": 1,
+      "name": "Default/Unused",
+      "description": "Blackhole VLAN (untagged on trunks, no IPs assigned)",
+      "hq_subnet": "N/A",
+      "branch_subnet": "N/A",
+      "dhcp": false
+    },
+    "5": {
+      "id": 5,
       "name": "Infrastructure",
-      "description": "Domain Controllers only (native/untagged)",
-      "hq_subnet": "172.16.0.0/24",
-      "branch_subnet": "172.17.0.0/24",
+      "description": "Domain Controllers only",
+      "hq_subnet": "172.16.5.0/24",
+      "branch_subnet": "172.17.5.0/24",
       "dhcp": false
     },
     "10": {
@@ -42,7 +50,7 @@
       "name": "HQ (Proxmox)",
       "wan": "192.168.1.240",
       "vlans": {
-        "1": { "subnet": "172.16.0.0/24", "gateway": "172.16.0.1" },
+        "5": { "subnet": "172.16.5.0/24", "gateway": "172.16.5.1" },
         "10": { "subnet": "172.16.10.0/24", "gateway": "172.16.10.1" },
         "20": { "subnet": "172.16.20.0/24", "gateway": "172.16.20.1" },
         "99": { "subnet": "172.16.99.0/24", "gateway": "172.16.99.1" }
@@ -51,19 +59,19 @@
         {
           "id": "opnsense-hq",
           "name": "OPNsenseHQ",
-          "ip": "172.16.0.1",
+          "ip": "172.16.5.1",
           "role": "Gateway/Firewall",
           "icon": "shield",
-          "vlan": 1,
+          "vlan": 5,
           "description": "Primary firewall and router for HQ site"
         },
         {
           "id": "dc1",
           "name": "P-WIN-DC1",
-          "ip": "172.16.0.10",
+          "ip": "172.16.5.10",
           "role": "Domain Controller",
           "icon": "server",
-          "vlan": 1,
+          "vlan": 5,
           "description": "Primary DC, DNS, DHCP, Forest Root"
         },
         {
@@ -91,7 +99,7 @@
       "name": "Branch (Hyper-V)",
       "wan": "192.168.1.245",
       "vlans": {
-        "1": { "subnet": "172.17.0.0/24", "gateway": "172.17.0.1" },
+        "5": { "subnet": "172.17.5.0/24", "gateway": "172.17.5.1" },
         "10": { "subnet": "172.17.10.0/24", "gateway": "172.17.10.1" },
         "20": { "subnet": "172.17.20.0/24", "gateway": "172.17.20.1" },
         "99": { "subnet": "172.17.99.0/24", "gateway": "172.17.99.1" }
@@ -100,19 +108,19 @@
         {
           "id": "opnsense-branch",
           "name": "OPNsenseBranch",
-          "ip": "172.17.0.1",
+          "ip": "172.17.5.1",
           "role": "Gateway/Firewall",
           "icon": "shield",
-          "vlan": 1,
+          "vlan": 5,
           "description": "Primary firewall for Branch site"
         },
         {
           "id": "dc2",
           "name": "H-WIN-DC2",
-          "ip": "172.17.0.10",
+          "ip": "172.17.5.10",
           "role": "Domain Controller",
           "icon": "server",
-          "vlan": 1,
+          "vlan": 5,
           "description": "Secondary DC, DNS, DHCP for Branch site"
         }
       ]
@@ -159,8 +167,8 @@
       }
     },
     "routes": {
-      "hq_to_branch": ["172.17.0.0/24", "172.17.10.0/24", "172.17.20.0/24", "172.17.99.0/24"],
-      "branch_to_hq": ["172.16.0.0/24", "172.16.10.0/24", "172.16.20.0/24", "172.16.99.0/24"]
+      "hq_to_branch": ["172.17.5.0/24", "172.17.10.0/24", "172.17.20.0/24", "172.17.99.0/24"],
+      "branch_to_hq": ["172.16.5.0/24", "172.16.10.0/24", "172.16.20.0/24", "172.16.99.0/24"]
     },
     "peer_routes": {
       "peers_to_hq": "172.16.0.0/16",
@@ -169,11 +177,11 @@
     }
   },
   "trusted_networks": [
-    "172.16.0.0/24",
+    "172.16.5.0/24",
     "172.16.10.0/24",
     "172.16.20.0/24",
     "172.16.99.0/24",
-    "172.17.0.0/24",
+    "172.17.5.0/24",
     "172.17.10.0/24",
     "172.17.20.0/24",
     "172.17.99.0/24",
