@@ -41,23 +41,32 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
         ┌───────────────────────┴───────────────────────┐
         │                                               │
         ▼                                               ▼
-┌───────────────────────┐                     ┌───────────────────────┐
-│   SITE A: HQ          │                     │   SITE B: BRANCH      │
-│   Proxmox VE          │                     │   Windows Hyper-V     │
-│   172.16.0.0/24       │                     │   172.17.0.0/24       │
-├───────────────────────┤                     ├───────────────────────┤
-│ OPNsenseHQ            │◄═══ WireGuard ════►│ OPNsenseBranch        │
-│   WAN: 192.168.1.240  │     VPN Tunnel      │   WAN: 192.168.1.245  │
-│   LAN: 172.16.0.1     │   10.200.0.0/24     │   LAN: 172.17.0.1     │
-├───────────────────────┤                     ├───────────────────────┤
-│ P-WIN-DC1             │◄─── AD Replication ─►│ H-WIN-DC2             │
-│   172.16.0.10         │                     │   172.17.0.10         │
-│   Primary DC + DNS    │                     │   Secondary DC + DNS  │
-├───────────────────────┤                     ├───────────────────────┤
-│ P-WIN-SRV1            │                     │                       │
-│   172.16.0.11         │                     │                       │
-│   Royal Server GW     │                     │                       │
-└───────────────────────┘                     └───────────────────────┘
+┌───────────────────────────────┐         ┌───────────────────────────────┐
+│   SITE A: HQ (Proxmox)        │         │   SITE B: BRANCH (Hyper-V)    │
+│   OPNsenseHQ                  │◄═══════►│   OPNsenseBranch              │
+│   WAN: 192.168.1.240          │WireGuard│   WAN: 192.168.1.245          │
+├───────────────────────────────┤  VPN    ├───────────────────────────────┤
+│                               │         │                               │
+│ VLAN 1 (Native) - Infra       │         │ VLAN 1 (Native) - Infra       │
+│   172.16.0.0/24               │         │   172.17.0.0/24               │
+│   ├─ .1  OPNsense             │         │   ├─ .1  OPNsense             │
+│   └─ .10 P-WIN-DC1            │         │   └─ .10 H-WIN-DC2            │
+│                               │         │                               │
+│ VLAN 10 - Clients             │         │ VLAN 10 - Clients             │
+│   172.16.10.0/24              │         │   172.17.10.0/24              │
+│   ├─ .1  Gateway              │         │   ├─ .1  Gateway              │
+│   └─ .30-.254 DHCP            │         │   └─ .30-.254 DHCP            │
+│                               │         │                               │
+│ VLAN 20 - Servers             │         │ VLAN 20 - Servers             │
+│   172.16.20.0/24              │         │   172.17.20.0/24              │
+│   ├─ .1  Gateway              │         │   └─ .1  Gateway              │
+│   └─ .11 P-WIN-SRV1           │         │                               │
+│                               │         │                               │
+│ VLAN 99 - Management          │         │ VLAN 99 - Management          │
+│   172.16.99.0/24              │         │   172.17.99.0/24              │
+│   └─ .1  Gateway              │         │   └─ .1  Gateway              │
+│                               │         │                               │
+└───────────────────────────────┘         └───────────────────────────────┘
         ▲
         │ WireGuard (Road Warrior)
         │
@@ -98,6 +107,7 @@ Each component is documented as a standalone project with step-by-step instructi
 | 8 | [Multi-Site AD Configuration](docs/Project-8-Multi-Site-Active-Directory.md) | AD Sites & Services, cross-site replication |
 | 9 | [Road Warrior VPN](docs/Project-9-Remote-Access-VPN-Road-Warrior.md) | Remote admin access via WireGuard |
 | 10 | [DHCP Migration to DCs](docs/Project-10-DHCP-Migration-to-Domain-Controllers.md) | AD-integrated DHCP with dynamic DNS |
+| 11 | [VLAN Network Segmentation](docs/Project-11-VLAN-Network-Segmentation.md) | Implement VLANs for network segmentation |
 
 ---
 
