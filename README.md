@@ -47,9 +47,12 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 │   WAN: 192.168.1.240          │WireGuard│   WAN: 192.168.1.245          │
 ├───────────────────────────────┤  VPN    ├───────────────────────────────┤
 │                               │         │                               │
-│ VLAN 1 (Native) - Infra       │         │ VLAN 1 (Native) - Infra       │
-│   172.16.0.0/24               │         │   172.17.0.0/24               │
-│   ├─ .1  OPNsense             │         │   ├─ .1  OPNsense             │
+│ VLAN 1 (Native) - Unused      │         │ VLAN 1 (Native) - Unused      │
+│   Blackhole (no IPs)          │         │   Blackhole (no IPs)          │
+│                               │         │                               │
+│ VLAN 5 - Infrastructure       │         │ VLAN 5 - Infrastructure       │
+│   172.16.5.0/24               │         │   172.17.5.0/24               │
+│   ├─ .1  Gateway              │         │   ├─ .1  Gateway              │
 │   └─ .10 P-WIN-DC1            │         │   └─ .10 H-WIN-DC2            │
 │                               │         │                               │
 │ VLAN 10 - Clients             │         │ VLAN 10 - Clients             │
