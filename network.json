@@ -1,13 +1,52 @@
 {
   "domain": "reginleif.io",
   "netbios": "REGINLEIF",
+  "vlans": {
+    "1": {
+      "id": 1,
+      "name": "Infrastructure",
+      "description": "Domain Controllers only (native/untagged)",
+      "hq_subnet": "172.16.0.0/24",
+      "branch_subnet": "172.17.0.0/24",
+      "dhcp": false
+    },
+    "10": {
+      "id": 10,
+      "name": "Clients",
+      "description": "Windows 10/11 workstations",
+      "hq_subnet": "172.16.10.0/24",
+      "branch_subnet": "172.17.10.0/24",
+      "dhcp": true,
+      "dhcp_range": ".30-.254"
+    },
+    "20": {
+      "id": 20,
+      "name": "Servers",
+      "description": "Member servers (Royal Server, WDS, etc.)",
+      "hq_subnet": "172.16.20.0/24",
+      "branch_subnet": "172.17.20.0/24",
+      "dhcp": false
+    },
+    "99": {
+      "id": 99,
+      "name": "Management",
+      "description": "Admin access, out-of-band management",
+      "hq_subnet": "172.16.99.0/24",
+      "branch_subnet": "172.17.99.0/24",
+      "dhcp": false
+    }
+  },
   "sites": {
     "hq": {
       "id": "hq",
       "name": "HQ (Proxmox)",
-      "subnet": "172.16.0.0/24",
-      "gateway": "172.16.0.1",
       "wan": "192.168.1.240",
+      "vlans": {
+        "1": { "subnet": "172.16.0.0/24", "gateway": "172.16.0.1" },
+        "10": { "subnet": "172.16.10.0/24", "gateway": "172.16.10.1" },
+        "20": { "subnet": "172.16.20.0/24", "gateway": "172.16.20.1" },
+        "99": { "subnet": "172.16.99.0/24", "gateway": "172.16.99.1" }
+      },
       "devices": [
         {
           "id": "opnsense-hq",
@@ -15,6 +54,7 @@
           "ip": "172.16.0.1",
           "role": "Gateway/Firewall",
           "icon": "shield",
+          "vlan": 1,
           "description": "Primary firewall and router for HQ site"
         },
         {
@@ -23,24 +63,39 @@
           "ip": "172.16.0.10",
           "role": "Domain Controller",
           "icon": "server",
-          "description": "Primary DC, DNS, Forest Root"
+          "vlan": 1,
+          "description": "Primary DC, DNS, DHCP, Forest Root"
         },
         {
           "id": "srv1",
           "name": "P-WIN-SRV1",
-          "ip": "172.16.0.11",
+          "ip": "172.16.20.11",
           "role": "Royal Server",
           "icon": "monitor",
+          "vlan": 20,
           "description": "Remote access gateway"
+        },
+        {
+          "id": "srv2",
+          "name": "P-WIN-SRV2",
+          "ip": "172.16.20.12",
+          "role": "WDS/MDT, AD CS, KMS",
+          "icon": "server",
+          "vlan": 20,
+          "description": "Windows Deployment Services, Certificate Authority, Key Management Service"
         }
       ]
     },
     "branch": {
       "id": "branch",
       "name": "Branch (Hyper-V)",
-      "subnet": "172.17.0.0/24",
-      "gateway": "172.17.0.1",
       "wan": "192.168.1.245",
+      "vlans": {
+        "1": { "subnet": "172.17.0.0/24", "gateway": "172.17.0.1" },
+        "10": { "subnet": "172.17.10.0/24", "gateway": "172.17.10.1" },
+        "20": { "subnet": "172.17.20.0/24", "gateway": "172.17.20.1" },
+        "99": { "subnet": "172.17.99.0/24", "gateway": "172.17.99.1" }
+      },
       "devices": [
         {
           "id": "opnsense-branch",
@@ -48,6 +103,7 @@
           "ip": "172.17.0.1",
           "role": "Gateway/Firewall",
           "icon": "shield",
+          "vlan": 1,
           "description": "Primary firewall for Branch site"
         },
         {
@@ -56,7 +112,8 @@
           "ip": "172.17.0.10",
           "role": "Domain Controller",
           "icon": "server",
-          "description": "Secondary DC for Branch site"
+          "vlan": 1,
+          "description": "Secondary DC, DNS, DHCP for Branch site"
         }
       ]
     },
@@ -102,13 +159,24 @@
       }
     },
     "routes": {
-      "hq_to_branch": "172.17.0.0/24",
-      "branch_to_hq": "172.16.0.0/24"
+      "hq_to_branch": ["172.17.0.0/24", "172.17.10.0/24", "172.17.20.0/24", "172.17.99.0/24"],
+      "branch_to_hq": ["172.16.0.0/24", "172.16.10.0/24", "172.16.20.0/24", "172.16.99.0/24"]
     },
     "peer_routes": {
-      "peers_to_hq": "172.16.0.0/24",
-      "peers_to_branch": "172.17.0.0/24",
+      "peers_to_hq": "172.16.0.0/16",
+      "peers_to_branch": "172.17.0.0/16",
       "peers_to_tunnel": "10.200.0.0/24"
     }
-  }
+  },
+  "trusted_networks": [
+    "172.16.0.0/24",
+    "172.16.10.0/24",
+    "172.16.20.0/24",
+    "172.16.99.0/24",
+    "172.17.0.0/24",
+    "172.17.10.0/24",
+    "172.17.20.0/24",
+    "172.17.99.0/24",
+    "10.200.0.0/24"
+  ]
 }
