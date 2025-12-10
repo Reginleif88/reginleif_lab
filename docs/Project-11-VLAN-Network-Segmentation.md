@@ -51,7 +51,7 @@ VLAN 1 is used by switches to communicate with each other (CDP, VTP, PAgP, DTP, 
 | 5 | Infrastructure | 172.16.5.0/24 | 172.17.5.0/24 | Domain Controllers only |
 | 10 | Clients | 172.16.10.0/24 | 172.17.10.0/24 | Windows 10/11 workstations |
 | 20 | Servers | 172.16.20.0/24 | 172.17.20.0/24 | Member servers (Royal Server, WDS, etc.) |
-| 99 | Management | 172.16.99.0/24 | 172.17.99.0/24 | Admin access, OOB management |
+| 99 | Management | 172.16.99.0/24 | 172.17.99.0/24 | Admin access etc. |
 
 ### IP Addressing Convention
 
@@ -65,6 +65,7 @@ Each VLAN follows a consistent scheme:
 
 > [!NOTE]
 > The third octet matches the VLAN ID for easy mental mapping:
+>
 > - VLAN 5 = 172.16.**5**.0/24 (HQ) or 172.17.**5**.0/24 (Branch)
 > - VLAN 10 = 172.16.**10**.0/24 (HQ) or 172.17.**10**.0/24 (Branch)
 
@@ -76,7 +77,7 @@ Each VLAN follows a consistent scheme:
 | P-WIN-SRV1 | Servers VLAN (20) | Proper segmentation, IP changes to 172.16.20.11 |
 | WDS/MDT (Future Project) | Servers VLAN (20) | New W2022 server (172.16.20.12), DHCP relay configured for PXE |
 | Firewall rules | Permissive initially | Allow all between trusted VLANs, tighten later |
-| DHCP | Clients VLAN only | Servers and Management use static IPs |
+| DHCP | Clients VLAN only | Infrastructure, Servers, and Management use static IPs |
 
 ---
 
@@ -227,15 +228,29 @@ Add permissive rules to each new VLAN interface allowing traffic between trusted
 
 OPNsense in Hybrid Outbound NAT mode should automatically create NAT rules for new interfaces.
 
+**On both OPNsense firewalls:**
+
 1. Navigate to **Firewall > NAT > Outbound**
 2. Verify rules exist for each new VLAN subnet
 3. If missing, add manual rules:
 
+**OPNsenseHQ:**
+
 | Interface | Source | Translation |
 |:----------|:-------|:------------|
+| WAN | 172.16.5.0/24 | Interface address |
 | WAN | 172.16.10.0/24 | Interface address |
 | WAN | 172.16.20.0/24 | Interface address |
 | WAN | 172.16.99.0/24 | Interface address |
+
+**OPNsenseBranch:**
+
+| Interface | Source | Translation |
+|:----------|:-------|:------------|
+| WAN | 172.17.5.0/24 | Interface address |
+| WAN | 172.17.10.0/24 | Interface address |
+| WAN | 172.17.20.0/24 | Interface address |
+| WAN | 172.17.99.0/24 | Interface address |
 
 ---
 
@@ -286,8 +301,8 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.16.5.
 Remove-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "P-WIN-DC1" -RRType A -Force
 Add-DnsServerResourceRecordA -ZoneName "reginleif.io" -Name "P-WIN-DC1" -IPv4Address 172.16.5.10
 
-# Update reverse zone (PTR record)
-Add-DnsServerPrimaryZone -NetworkID "172.16.5.0/24" -ReplicationScope "Forest"
+# The new PTR record will be created in the reverse lookup zone defined in Section 5.
+# You may need to manually remove the old PTR record from the old "0.16.172.in-addr.arpa" zone.
 ```
 
 ### C. Migrate P-WIN-SRV1 to VLAN 20
@@ -304,9 +319,9 @@ P-WIN-SRV1 (Royal Server) moves from Infrastructure to the Servers VLAN:
 
 ```powershell
 # [P-WIN-SRV1]
-# Change IP from 172.16.5.11 to 172.16.20.11
+# Change IP from 172.16.0.11 to 172.16.20.11
 New-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 172.16.20.11 -PrefixLength 24 -DefaultGateway 172.16.20.1
-Remove-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 172.16.5.11 -Confirm:$false
+Remove-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 172.16.0.11 -Confirm:$false
 
 # Update DNS to point to DCs (new VLAN 5 IPs)
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.16.5.10,172.17.5.10
@@ -319,6 +334,9 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.16.5.
 # Update A record for SRV1
 Remove-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "P-WIN-SRV1" -RRType A -Force
 Add-DnsServerResourceRecordA -ZoneName "reginleif.io" -Name "P-WIN-SRV1" -IPv4Address 172.16.20.11
+
+# The new PTR record will be created in the reverse lookup zone defined in Section 5.
+# You may need to manually remove the old PTR record from the old "0.16.172.in-addr.arpa" zone.
 ```
 
 4. **Update Royal Server connections** (if any saved connections reference the old IP)
@@ -386,8 +404,8 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.17.5.
 Remove-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "H-WIN-DC2" -RRType A -Force
 Add-DnsServerResourceRecordA -ZoneName "reginleif.io" -Name "H-WIN-DC2" -IPv4Address 172.17.5.10
 
-# Update reverse zone (PTR record)
-Add-DnsServerPrimaryZone -NetworkID "172.17.5.0/24" -ReplicationScope "Forest"
+# The new PTR record will be created in the reverse lookup zone defined in Section 5.
+# You may need to manually remove the old PTR record from the old "0.17.172.in-addr.arpa" zone.
 ```
 
 ### C. Assigning VMs to VLANs
@@ -414,31 +432,9 @@ Or via GUI:
 
 ## 4. DHCP Configuration
 
-Create DHCP scopes for the Clients VLAN at each site. Update existing Infrastructure VLAN scopes to use the new VLAN 5 subnet.
+Create DHCP scopes for the Clients VLAN at each site. Infrastructure, Server, and Management VLANs use static IP assignment only.
 
-### A. Update Infrastructure VLAN Scope (P-WIN-DC1)
-
-```powershell
-# [P-WIN-DC1]
-# Remove old Infrastructure scope (172.16.0.0/24)
-Remove-DhcpServerv4Scope -ScopeId 172.16.0.0 -Force
-
-# Create new Infrastructure scope (172.16.5.0/24)
-Add-DhcpServerv4Scope -Name "HQ-Infrastructure-VLAN5" `
-    -StartRange 172.16.5.30 `
-    -EndRange 172.16.5.254 `
-    -SubnetMask 255.255.255.0 `
-    -LeaseDuration 0.08:00:00 `
-    -State Active
-
-# Set scope options
-Set-DhcpServerv4OptionValue -ScopeId 172.16.5.0 `
-    -Router 172.16.5.1 `
-    -DnsServer 172.16.5.10,172.17.5.10 `
-    -DnsDomain "reginleif.io"
-```
-
-### B. HQ Client VLAN Scope (P-WIN-DC1)
+### A. HQ Client VLAN Scope (P-WIN-DC1)
 
 ```powershell
 # [P-WIN-DC1]
@@ -457,29 +453,7 @@ Set-DhcpServerv4OptionValue -ScopeId 172.16.10.0 `
     -DnsDomain "reginleif.io"
 ```
 
-### C. Update Infrastructure VLAN Scope (H-WIN-DC2)
-
-```powershell
-# [H-WIN-DC2]
-# Remove old Infrastructure scope (172.17.0.0/24)
-Remove-DhcpServerv4Scope -ScopeId 172.17.0.0 -Force
-
-# Create new Infrastructure scope (172.17.5.0/24)
-Add-DhcpServerv4Scope -Name "Branch-Infrastructure-VLAN5" `
-    -StartRange 172.17.5.30 `
-    -EndRange 172.17.5.254 `
-    -SubnetMask 255.255.255.0 `
-    -LeaseDuration 0.08:00:00 `
-    -State Active
-
-# Set scope options
-Set-DhcpServerv4OptionValue -ScopeId 172.17.5.0 `
-    -Router 172.17.5.1 `
-    -DnsServer 172.17.5.10,172.16.5.10 `
-    -DnsDomain "reginleif.io"
-```
-
-### D. Branch Client VLAN Scope (H-WIN-DC2)
+### B. Branch Client VLAN Scope (H-WIN-DC2)
 
 ```powershell
 # [H-WIN-DC2]
@@ -499,7 +473,7 @@ Set-DhcpServerv4OptionValue -ScopeId 172.17.10.0 `
 ```
 
 > [!NOTE]
-> Server and Management VLANs use static IP assignment, so no DHCP scopes are needed for VLAN 20 and 99.
+> Infrastructure, Server, and Management VLANs use static IP assignment only. No DHCP scopes are needed for VLAN 5, 20, and 99.
 
 ---
 
@@ -511,6 +485,7 @@ Create reverse lookup zones for all new VLAN subnets to enable PTR record regist
 # [P-WIN-DC1]
 # Remove old Infrastructure reverse zone (if it exists)
 Remove-DnsServerZone -Name "0.16.172.in-addr.arpa" -Force -ErrorAction SilentlyContinue
+Remove-DnsServerZone -Name "0.17.172.in-addr.arpa" -Force -ErrorAction SilentlyContinue
 
 # Create reverse zones with Forest-wide replication
 Add-DnsServerPrimaryZone -NetworkID "172.16.5.0/24" -ReplicationScope "Forest"
@@ -641,6 +616,7 @@ Get-NetFirewallRule -DisplayName "Allow Lab Subnets - All" |
 
 > [!TIP]
 > **Production Consideration:** The `Allow Lab Subnets - All` rule is extremely permissive, allowing all protocols from trusted subnets. While acceptable for a lab environment, a production deployment should implement granular rules based on the principle of least privilege. For example:
+>
 > - Domain Controllers: Allow only AD-specific ports (TCP/UDP 53 for DNS, TCP/UDP 88 for Kerberos, TCP 135/389/636/3268/3269 for LDAP, TCP 445 for SMB, etc.)
 > - Member Servers: Restrict to only required service ports (e.g., TCP 443 for Royal Server HTTPS)
 > - Management interfaces: Limit to administrative protocols (RDP, WinRM, etc.) from specific management subnets only
