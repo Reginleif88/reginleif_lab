@@ -1,8 +1,8 @@
 ---
 title: "Project 10: DHCP Migration to Domain Controllers"
-tags: [dhcp, active-directory, powershell, networking]
+tags: [dhcp, migration, active-directory, windows-server, powershell]
 sites: [hq, branch]
-status: planned
+status: completed
 ---
 
 ## Goal
@@ -20,41 +20,69 @@ The following table summarizes DHCP configuration per site:
 
 > [!NOTE]
 > Each site has a single DHCP server with no failover configured. This is acceptable for lab purposes where brief outages are tolerable. For production resilience, DHCP failover between partner servers would be implemented. A future project will add dedicated DHCP servers with failover at each site.
+> [!TIP]
+> This project demonstrates both configuration methods:
+>
+> - **DC1 (HQ)**: RSAT GUI from P-WIN-SRV1
+> - **DC2 (Branch)**: PowerShell (core server)
+>
+> This approach lets you practice the same tasks using different tools.
 
 ---
 
 ## 1. Install DHCP Role
 
-Run on **both** Domain Controllers:
+### Prerequisites - Install DHCP Management Tools (P-WIN-SRV1)
+
+1. Open **Server Manager** on P-WIN-SRV1
+2. Click **Manage** → **Add Roles and Features**
+3. Select **P-WIN-SRV1.reginleif.io** from the server pool
+4. Skip **Roles** (click Next)
+5. In **Features**, expand **Remote Server Administration Tools** → **Role Administration Tools**
+6. Check **DHCP Server Tools**
+7. Complete the wizard
+
+### DC1 - GUI Method (from P-WIN-SRV1)
+
+1. Open **Server Manager** on P-WIN-SRV1
+2. Click **Manage** → **Add Roles and Features**
+3. Select **Role-based or feature-based installation**
+4. Select **P-WIN-DC1.reginleif.io** from the server pool
+5. Check **DHCP Server** under Roles
+6. Complete the wizard and wait for installation
+7. After installation, click the notification flag in Server Manager
+8. Click **Complete DHCP configuration**
+9. In the wizard, click **Commit** to authorize the server in AD
+
+### DC2 - PowerShell Method
 
 ```powershell
-# [Both DCs]
+# [H-WIN-DC2]
 # Install DHCP Server role
 Install-WindowsFeature DHCP -IncludeManagementTools
-
-# Restart if required
-Restart-Computer -Force
 ```
 
-### Authorize DHCP Servers in Active Directory
+### Authorize DC2 in Active Directory
 
 Only authorized DHCP servers can issue leases in an AD environment.
-
-**On DC1 (P-WIN-DC1):**
-
-```powershell
-# [P-WIN-DC1]
-Add-DhcpServerInDC -DnsName "P-WIN-DC1.reginleif.io" -IPAddress 172.16.0.10
-```
-
-**On DC2 (H-WIN-DC2):**
 
 ```powershell
 # [H-WIN-DC2]
 Add-DhcpServerInDC -DnsName "H-WIN-DC2.reginleif.io" -IPAddress 172.17.0.10
+
+# Force AD replication so DC1 and SRV1 see the authorization immediately
+repadmin /syncall /AdeP
 ```
 
 ### Verify Authorization
+
+**GUI (from P-WIN-SRV1):**
+
+1. Open **DHCP** management console (dhcpmgmt.msc)
+2. Right-click **DHCP** → **Manage authorized servers**
+3. Verify both DCs are listed
+
+**PowerShell:**
 
 ```powershell
 # [Either DC]
@@ -63,33 +91,40 @@ Get-DhcpServerInDC
 
 ---
 
-## 2. Configure HQ Scope (DC1)
+## 2. Configure HQ Scope (DC1) - GUI Method
 
-Run on **P-WIN-DC1**:
+From **P-WIN-SRV1**:
 
-```powershell
-# [P-WIN-DC1]
-# Create the scope
-Add-DhcpServerv4Scope -Name "HQ-LAN" `
-    -StartRange 172.16.0.30 `
-    -EndRange 172.16.0.254 `
-    -SubnetMask 255.255.255.0 `
-    -LeaseDuration 0.08:00:00 `
-    -State Active
+1. Open **DHCP** management console (dhcpmgmt.msc)
+2. Right-click **DHCP** → **Add Server**
+3. Enter `P-WIN-DC1` and click **OK**
+4. Expand **P-WIN-DC1** → **IPv4**
+5. Right-click **IPv4** → **New Scope**
 
-# Set scope options (Gateway, DNS, Domain)
-Set-DhcpServerv4OptionValue -ScopeId 172.16.0.0 `
-    -Router 172.16.0.1 `
-    -DnsServer 172.16.0.10,172.17.0.10 `
-    -DnsDomain "reginleif.io"
-```
+### New Scope Wizard
+
+1. **Name**: `HQ-LAN`
+2. **IP Address Range**:
+   - Start IP: `172.16.0.30`
+   - End IP: `172.16.0.254`
+   - Subnet mask: `255.255.255.0`
+3. **Add Exclusions**: Skip (none needed)
+4. **Lease Duration**: `8 hours`
+5. **Configure DHCP Options**: Yes, I want to configure these options now
+6. **Router (Default Gateway)**: `172.16.0.1`
+7. **Domain Name and DNS Servers**:
+    - Parent domain: `reginleif.io`
+    - DNS servers: `172.16.0.10` and `172.17.0.10`
+8. **WINS Servers**: Skip
+9. **Activate Scope**: Yes
+10. Click **Finish**
 
 > [!NOTE]
 > Lease duration is set to 8 hours, suitable for a lab environment.
 
 ---
 
-## 3. Configure Branch Scope (DC2)
+## 3. Configure Branch Scope (DC2) - PowerShell Method
 
 Run on **H-WIN-DC2**:
 
@@ -119,10 +154,37 @@ Set-DhcpServerv4OptionValue -ScopeId 172.17.0.0 `
 
 Configure DHCP to register DNS records for clients automatically.
 
-Run on **both** DCs:
+### Why DNS Dynamic Updates Matter
+
+When clients receive DHCP leases, they need corresponding DNS records so other systems can resolve their hostnames to IP addresses. Without dynamic DNS updates:
+
+- **Manual overhead**: Administrators would need to create and maintain DNS records for every DHCP client
+- **Stale records**: When leases expire or renew with different IPs, DNS records would become outdated
+- **Name resolution failures**: Computers couldn't reliably find each other by hostname
+
+With Active Directory-integrated DHCP and DNS:
+
+- **Automatic registration**: DHCP registers both forward (A) and reverse (PTR) records as leases are assigned
+- **Automatic cleanup**: Records are removed when leases expire, keeping DNS clean
+- **Secure updates**: Only authorized DHCP servers can update DNS in AD-integrated zones
+- **Legacy support**: The server can register records even for clients that don't support dynamic DNS (older OS, non-Windows devices)
+
+### Configure DC1 (GUI Method from P-WIN-SRV1)
+
+1. In DHCP console, expand **P-WIN-DC1** → **IPv4**
+2. Right-click **IPv4** → **Properties**
+3. Go to the **DNS** tab
+4. Configure:
+   - Check **Enable DNS dynamic updates according to the settings below**
+   - Select **Always dynamically update DNS records**
+   - Check **Discard A and PTR records when lease is deleted**
+   - Check **Dynamically update DNS records for DHCP clients that do not request updates**
+5. Click **OK**
+
+### Configure DC2 (PowerShell Method)
 
 ```powershell
-# [Both DCs]
+# [H-WIN-DC2]
 # Enable dynamic DNS updates
 Set-DhcpServerv4DnsSetting -ComputerName localhost `
     -DynamicUpdates "Always" `
@@ -145,12 +207,20 @@ Set-DhcpServerv4DnsSetting -ComputerName localhost `
 
 Configure DHCP to check for IP conflicts before assigning addresses. This prevents duplicate IP assignment if a static IP is accidentally configured within the DHCP range.
 
-Run on **both** DCs:
+**DC1 - GUI Method (from P-WIN-SRV1):**
+
+1. In DHCP console, expand **P-WIN-DC1** → **IPv4**
+2. Right-click **IPv4** → **Properties**
+3. Go to the **Advanced** tab
+4. Set **Conflict detection attempts** to `2`
+5. Click **OK**
+
+**DC2 - PowerShell Method:**
 
 ```powershell
-# [Both DCs]
+# [H-WIN-DC2]
 # Enable conflict detection with 2 ping attempts before assignment
-Set-DhcpServerv4ConflictDetection -ComputerName localhost -Enable $true -Attempts 2
+Set-DhcpServerSetting -ComputerName localhost -ConflictDetectionAttempts 2
 ```
 
 > [!NOTE]
@@ -162,6 +232,14 @@ Set-DhcpServerv4ConflictDetection -ComputerName localhost -Enable $true -Attempt
 
 ### Check DHCP Server Status
 
+**GUI (from P-WIN-SRV1):**
+
+1. In DHCP console, expand each server → **IPv4**
+2. View scopes under each server
+3. Right-click a scope → **Display Statistics** to see lease information
+
+**PowerShell:**
+
 ```powershell
 # View all scopes
 Get-DhcpServerv4Scope
@@ -170,48 +248,14 @@ Get-DhcpServerv4Scope
 Get-DhcpServerv4ScopeStatistics
 ```
 
-### Test DHCP Lease Acquisition
+### View Active Leases (when we have some clients)
 
-From a client on the network:
+**GUI (from P-WIN-SRV1):**
 
-**Windows:**
+1. In DHCP console, expand the server → **IPv4** → scope
+2. Click **Address Leases** to view all active leases
 
-```powershell
-# Release current lease
-ipconfig /release
-
-# Request new lease
-ipconfig /renew
-
-# Verify IP and DNS settings
-ipconfig /all
-```
-
-**Linux:**
-
-```bash
-# Release and renew (varies by distro)
-sudo dhclient -r
-sudo dhclient
-
-# Verify
-ip addr show
-cat /etc/resolv.conf
-```
-
-### Verify DNS Registration
-
-On a Domain Controller:
-
-```powershell
-# Check if client hostname appears in DNS
-Get-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "<client-hostname>"
-
-# List all A records in the zone
-Get-DnsServerResourceRecord -ZoneName "reginleif.io" -RRType A
-```
-
-### View Active Leases
+**PowerShell:**
 
 ```powershell
 # On DC1

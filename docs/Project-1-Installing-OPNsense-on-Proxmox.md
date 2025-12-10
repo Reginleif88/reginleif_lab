@@ -1,6 +1,6 @@
 ---
 title: "Project 1: OPNsense Gateway Deployment (HQ)"
-tags: [OPNsense, networking, proxmox, setup]
+tags: [opnsense, deployment, proxmox]
 sites: [hq]
 status: completed
 ---

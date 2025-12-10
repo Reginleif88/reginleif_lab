@@ -1,6 +1,6 @@
 ---
 title: "Project 2: Proxmox Windows Core Setup"
-tags: [proxmox, windows-server, virtio]
+tags: [windows-server, deployment, proxmox]
 sites: [hq]
 status: completed
 ---

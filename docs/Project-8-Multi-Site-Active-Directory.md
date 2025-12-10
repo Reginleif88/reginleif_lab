@@ -1,6 +1,6 @@
 ---
 title: "Project 8: Multi-Site Active Directory Configuration"
-tags: [active-directory, windows-server, dns, replication]
+tags: [active-directory, integration, windows-server, dns]
 sites: [hq, branch]
 status: completed
 ---
@@ -267,6 +267,7 @@ Source: 0.pool.ntp.org (or similar)
 Stratum: 2 or 3
 ```
 
+> [!NOTE]
 > **What is Stratum?** NTP uses a hierarchy called "stratum" to indicate distance from an authoritative time source. Stratum 0 is an atomic clock, Stratum 1 is directly connected to it, Stratum 2 syncs from Stratum 1, etc. Your DC will typically be Stratum 2-4, which is normal.
 
 ---
