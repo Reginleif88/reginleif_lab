@@ -13,12 +13,14 @@ Create a repeatable process for deploying high-performance Windows Server Core V
 
 ## 1. VM Hardware Configuration
 
+Configure the Windows Server Core VM with these specifications.
+
 * **OS Type:** Microsoft Windows 11/2022
 * **Machine:** q35 (Native PCIe)
 * **BIOS:** OVMF (UEFI)
 * **CPU:** Type Host (Pass-through AES-NI) | 4 Cores
 * **RAM:** 4096 MB (4 GB)
-* **Controller:** VirtIO SCSI Single + [x] IO Thread
+* **Controller:** VirtIO SCSI Single (IO Thread enabled)
 * **Disk:** 80 GB (Recommended for Domain Controllers - AD database, SYSVOL, and logs)
 * **Network:** VirtIO (Paravirtualized) (LAN interface of OPNsense) (Crucial for 10Gbps speed)
 
@@ -42,6 +44,7 @@ Running the installer requires loading drivers manually since Windows doesn't se
 Since there is no GUI, use these commands to finish the driver setup.
 
 ```powershell
+# [Windows Server]
 # 1. Exit sconfig to PowerShell
 exit #(option 15)
 

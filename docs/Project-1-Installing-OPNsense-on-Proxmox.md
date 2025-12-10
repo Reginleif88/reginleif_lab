@@ -13,13 +13,15 @@ Deploy OPNsense (`OPNsenseHQ`) on Proxmox to serve as the secure gateway and fir
 
 ## 1. VM Hardware Configuration
 
+Configure the virtual machine with these specifications. Settings are optimized for OPNsense's FreeBSD base.
+
 * **OS Type:** Other / Unknown (FreeBSD-based)
 * **Machine:** q35 (Native PCIe)
 * **BIOS:** OVMF (UEFI)
 * **CPU:** Type Host (Passthrough AES-NI) | 2 Cores
 * **RAM:** 4096 MB (4 GB)
 * **Disk:** 40 GB
-* **Controller:** VirtIO SCSI Single + [x] IO Thread
+* **Controller:** VirtIO SCSI Single (IO Thread enabled)
 * **Network:** VirtIO (Paravirtualized) x2
   * *Net0:* Bridge `vmbr0` (WAN)
   * *Net1:* Bridge `vmbr1` (LAN - Isolated)
@@ -46,6 +48,8 @@ Before booting, ensure the Proxmox host has the correct bridges:
 ---
 
 ## 3. Base Installation
+
+Perform the initial OPNsense installation from the ISO image.
 
 1. Boot `OPNsense-dvd-amd64.iso`.
 2. Login as `installer` / `opnsense`.
@@ -169,6 +173,7 @@ If WAN uses DHCP, the upstream router may push its own DNS servers, overriding y
 From the OPNsense shell (console or SSH, or use GUI):
 
 ```sh
+# [OPNsenseHQ]
 ping google.com
 ping 1.1.1.1
 ```

@@ -13,6 +13,8 @@ Deploy and prepare the Windows Server 2022 Core VM H-WIN-DC2 on Hyper-V as the s
 
 ## 1. VM Hardware Configuration
 
+Configure the Hyper-V VM for the Branch domain controller.
+
 * **Generation:** Generation 2 (UEFI)
 * **Secure Boot:** Enabled (Windows Server supports Secure Boot on Hyper-V)
 * **Processor:** 4 Virtual Processors
@@ -37,6 +39,7 @@ From sconfig, enable RDP for easier management:
 ### Disable Windows Update
 
 ```powershell
+# [H-WIN-DC2]
 # Exit sconfig to PowerShell
 exit #(option 15)
 
@@ -56,6 +59,7 @@ Configure the VM's hostname and network settings for the Branch office domain.
 ### Set Hostname
 
 ```powershell
+# [H-WIN-DC2]
 # Rename the computer and restart
 Rename-Computer -NewName "H-WIN-DC2" -Restart
 ```
@@ -64,9 +68,11 @@ Rename-Computer -NewName "H-WIN-DC2" -Restart
 
 After the restart, set a static IP address for the Branch LAN network.
 
-> **Note:** Interface name may vary. Run `Get-NetAdapter` to confirm.
+> [!NOTE]
+> Interface name may vary. Run `Get-NetAdapter` to confirm.
 
 ```powershell
+# [H-WIN-DC2]
 # Configure static IP address for Branch network
 New-NetIPAddress -InterfaceAlias "Ethernet" `
     -IPAddress 172.17.0.10 -PrefixLength 24 -DefaultGateway 172.17.0.1
@@ -74,9 +80,11 @@ New-NetIPAddress -InterfaceAlias "Ethernet" `
 
 ### Configure DNS (Temporary)
 
-> **Note:** This DNS configuration is temporary. Initially, we point to the OPNsense gateway (`172.17.0.1`) which can provide basic name resolution. Once the site-to-site VPN is established (Project 7), this will be updated to point to the HQ Domain Controller (`172.16.0.10`) for proper Active Directory integration.
+> [!NOTE]
+> This DNS configuration is temporary. Initially, we point to the OPNsense gateway (`172.17.0.1`) which can provide basic name resolution. Once the site-to-site VPN is established (Project 7), this will be updated to point to the HQ Domain Controller (`172.16.0.10`) for proper Active Directory integration.
 
 ```powershell
+# [H-WIN-DC2]
 # Set DNS to OPNsense gateway (temporary configuration)
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "172.17.0.1"
 ```

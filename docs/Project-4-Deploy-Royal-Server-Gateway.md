@@ -7,7 +7,10 @@ status: completed
 
 ## Goal
 
-Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act as a secure gateway for RDP/SSH connections and a central management point for the homelab. This project is optional but useful if using Royal TS for managing connections etc.
+Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act as a secure gateway for RDP/SSH connections and a central management point for the homelab.
+
+> [!NOTE]
+> **Optional Project:** This project is useful for practicing enterprise remote access patterns such as bastion hosts, gateway-based access, and centralized credential management.
 
 ---
 
@@ -22,14 +25,15 @@ Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act
 | **BIOS** | OVMF (UEFI) | |
 | **CPU** | Type Host, 2 Cores | Enables AES-NI (Critical for encryption performance) |
 | **RAM** | 4096 MB (4 GB) | Desktop Experience usually requires more than Core even if not DC|
-| **Controller** | VirtIO SCSI Single | **[x] IO Thread** enabled |
+| **Controller** | VirtIO SCSI Single | IO Thread enabled |
 | **Network** | VirtIO (Paravirtualized) | Required for 10Gbps inter-VM speeds (LAN interface of OPNsense) |
 
 ---
 
 ## 2. Prerequisites
 
-> **Note:** With the VirtIO ISO already mounted, run `virtio-win-gt-x64.msi` to install all drivers + networking, then run `virtio-win-guest-tools.exe` to install the QEMU Guest Agent and reboot. Enable the agent in Proxmox under **VM Options > QEMU Guest Agent** if needed.
+> [!NOTE]
+> With the VirtIO ISO already mounted, run `virtio-win-gt-x64.msi` to install all drivers + networking, then run `virtio-win-guest-tools.exe` to install the QEMU Guest Agent and reboot. Enable the agent in Proxmox under **VM Options > QEMU Guest Agent** if needed.
 
 * **Hostname:** `P-WIN-SRV1`
 * **IP Address:** `172.16.0.11` (Static)
@@ -40,6 +44,7 @@ Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act
 * **Windows Update:** Once domain-joined, the GPO from Project 3 disables automatic updates. If configuring before domain join, disable locally:
 
 ```powershell
+# [P-WIN-SRV1]
 Set-Service -Name wuauserv -StartupType Disabled
 Stop-Service -Name wuauserv
 ```
@@ -65,7 +70,7 @@ Create a dedicated service account in AD:
 
 * **Name:** `svc_RoyalServer`
 * **Password:** Set a strong password.
-* **Settings:** `[x] Password never expires`.
+* **Settings:** Password never expires (enabled).
 
 ### 2. Create Security Groups
 
@@ -146,7 +151,8 @@ The installer usually handles this, but verify the rules exist.
 
 ## 8. Royal TS Client Configuration
 
-> **Note:** Full validation requires Road Warrior VPN access. Complete **Project 9 - Remote Access VPN** first, then return here.
+> [!NOTE]
+> Full validation requires Road Warrior VPN access. Complete **Project 9 - Remote Access VPN** first, then return here.
 
 ### 1. Create Management Object
 

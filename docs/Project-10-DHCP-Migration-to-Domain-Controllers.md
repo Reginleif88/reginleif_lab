@@ -11,12 +11,15 @@ Configure DHCP on both Domain Controllers to provide IP addresses with AD-integr
 
 ---
 
+The following table summarizes DHCP configuration per site:
+
 | Site | DC | Subnet | DHCP Range | Reserved |
 | :------ | :----- | :-------- | :------------ | :---------- |
 | HQ | P-WIN-DC1 | 172.16.0.0/24 | .30 - .254 | .1 - .29 |
 | Branch | H-WIN-DC2 | 172.17.0.0/24 | .30 - .254 | .1 - .29 |
 
-> **Design Note:** Each site has a single DHCP server with no failover configured. This is acceptable for lab purposes where brief outages are tolerable. For production resilience, DHCP failover between partner servers would be implemented. A future project will add dedicated DHCP servers with failover at each site.
+> [!NOTE]
+> Each site has a single DHCP server with no failover configured. This is acceptable for lab purposes where brief outages are tolerable. For production resilience, DHCP failover between partner servers would be implemented. A future project will add dedicated DHCP servers with failover at each site.
 
 ---
 
@@ -25,6 +28,7 @@ Configure DHCP on both Domain Controllers to provide IP addresses with AD-integr
 Run on **both** Domain Controllers:
 
 ```powershell
+# [Both DCs]
 # Install DHCP Server role
 Install-WindowsFeature DHCP -IncludeManagementTools
 
@@ -39,18 +43,21 @@ Only authorized DHCP servers can issue leases in an AD environment.
 **On DC1 (P-WIN-DC1):**
 
 ```powershell
+# [P-WIN-DC1]
 Add-DhcpServerInDC -DnsName "P-WIN-DC1.reginleif.io" -IPAddress 172.16.0.10
 ```
 
 **On DC2 (H-WIN-DC2):**
 
 ```powershell
+# [H-WIN-DC2]
 Add-DhcpServerInDC -DnsName "H-WIN-DC2.reginleif.io" -IPAddress 172.17.0.10
 ```
 
 ### Verify Authorization
 
 ```powershell
+# [Either DC]
 Get-DhcpServerInDC
 ```
 
@@ -61,6 +68,7 @@ Get-DhcpServerInDC
 Run on **P-WIN-DC1**:
 
 ```powershell
+# [P-WIN-DC1]
 # Create the scope
 Add-DhcpServerv4Scope -Name "HQ-LAN" `
     -StartRange 172.16.0.30 `
@@ -76,7 +84,8 @@ Set-DhcpServerv4OptionValue -ScopeId 172.16.0.0 `
     -DnsDomain "reginleif.io"
 ```
 
-> **Note:** Lease duration is set to 8 hours, suitable for a lab environment.
+> [!NOTE]
+> Lease duration is set to 8 hours, suitable for a lab environment.
 
 ---
 
@@ -85,6 +94,7 @@ Set-DhcpServerv4OptionValue -ScopeId 172.16.0.0 `
 Run on **H-WIN-DC2**:
 
 ```powershell
+# [H-WIN-DC2]
 # Create the scope
 Add-DhcpServerv4Scope -Name "Branch-LAN" `
     -StartRange 172.17.0.30 `
@@ -100,7 +110,8 @@ Set-DhcpServerv4OptionValue -ScopeId 172.17.0.0 `
     -DnsDomain "reginleif.io"
 ```
 
-> **Note:** DNS order is reversed - local DC first for faster resolution.
+> [!NOTE]
+> DNS order is reversed - local DC first for faster resolution.
 
 ---
 
@@ -111,6 +122,7 @@ Configure DHCP to register DNS records for clients automatically.
 Run on **both** DCs:
 
 ```powershell
+# [Both DCs]
 # Enable dynamic DNS updates
 Set-DhcpServerv4DnsSetting -ComputerName localhost `
     -DynamicUpdates "Always" `
@@ -126,7 +138,8 @@ Set-DhcpServerv4DnsSetting -ComputerName localhost `
 | Non-domain Windows | DHCP registers both A and PTR (if enabled) |
 | Linux/Other | DHCP registers both A and PTR (if enabled) |
 
-> **Note:** `UpdateDnsRRForOlderClients` allows DHCP to register records for non-Windows clients.
+> [!NOTE]
+> `UpdateDnsRRForOlderClients` allows DHCP to register records for non-Windows clients.
 
 ### Enable Conflict Detection (Optional)
 
@@ -135,11 +148,13 @@ Configure DHCP to check for IP conflicts before assigning addresses. This preven
 Run on **both** DCs:
 
 ```powershell
+# [Both DCs]
 # Enable conflict detection with 2 ping attempts before assignment
 Set-DhcpServerv4ConflictDetection -ComputerName localhost -Enable $true -Attempts 2
 ```
 
-> **Trade-off:** Conflict detection adds ~2 seconds to lease acquisition (time for ping attempts). For lab environments with few static IPs, this minor delay provides worthwhile protection against misconfigurations.
+> [!NOTE]
+> Conflict detection adds ~2 seconds to lease acquisition (time for ping attempts). For lab environments with few static IPs, this minor delay provides worthwhile protection against misconfigurations.
 
 ---
 
