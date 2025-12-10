@@ -21,7 +21,8 @@ Configure Active Directory for multi-site operation after the WireGuard VPN tunn
 
 ## 1. Windows Host Firewall Configuration
 
-> **Important:** OPNsense firewall rules control traffic at the network gateway level, but Windows Server has its own host-based firewall that applies independently. By default, Windows blocks SMB (File Sharing), RPC (AD Replication), and ICMP (Ping) from "foreign" subnets.
+> [!IMPORTANT]
+> OPNsense firewall rules control traffic at the network gateway level, but Windows Server has its own host-based firewall that applies independently. By default, Windows blocks SMB (File Sharing), RPC (AD Replication), and ICMP (Ping) from "foreign" subnets.
 
 **The Issue:** Even with a perfectly configured VPN, Windows will block:
 
@@ -37,6 +38,7 @@ This is the **#1 reason** site-to-site VPN labs fail validation tests.
 **On P-WIN-DC1 (HQ) and H-WIN-DC2 (Branch):**
 
 ```powershell
+# [Both DCs]
 # Allow all TCP traffic from lab subnets (covers SMB, RPC, LDAP, Kerberos)
 New-NetFirewallRule -DisplayName "Allow Lab Subnets - TCP" -Direction Inbound `
     -LocalPort Any -Protocol TCP -Action Allow `
@@ -55,11 +57,13 @@ New-NetFirewallRule -DisplayName "Allow ICMPv4 - Ping" -Protocol ICMPv4 `
 **Verify the rules were created:**
 
 ```powershell
+# [Both DCs]
 Get-NetFirewallRule -DisplayName "Allow Lab*" | Format-Table Name, DisplayName, Enabled
 Get-NetFirewallRule -DisplayName "Allow ICMPv4*" | Format-Table Name, DisplayName, Enabled
 ```
 
-> **Production Note:** In production environments, you would create granular rules for specific ports (53, 88, 135, 389, 445, 464, 636, 3268, 3269, 49152-65535) rather than allowing all TCP/UDP. For lab purposes, the broad rule simplifies troubleshooting.
+> [!NOTE]
+> In production environments, you would create granular rules for specific ports (53, 88, 135, 389, 445, 464, 636, 3268, 3269, 49152-65535) rather than allowing all TCP/UDP. For lab purposes, the broad rule simplifies troubleshooting.
 
 ---
 
@@ -134,7 +138,8 @@ repadmin /replsummary
     * Change "Replicate every" from 180 to **15 minutes** (for lab testing).
     * Click OK.
 
-> **Note:** `H-WIN-DC2` will automatically be placed in the `Branch-HyperV` site during DC promotion (Section 5) when you specify `-SiteName "Branch-HyperV"`. No manual server move is required.
+> [!NOTE]
+> `H-WIN-DC2` will automatically be placed in the `Branch-HyperV` site during DC promotion (Section 5) when you specify `-SiteName "Branch-HyperV"`. No manual server move is required.
 
 ---
 
@@ -147,6 +152,7 @@ After VPN is established, configure DC2's timezone and DNS settings before joini
 **On H-WIN-DC2:**
 
 ```powershell
+# [H-WIN-DC2]
 # Check current timezone
 Get-TimeZone
 
@@ -154,15 +160,18 @@ Get-TimeZone
 Set-TimeZone -Id "Romance Standard Time"
 ```
 
-> **Note:** Timezone does not sync via Active Directory. Each server must be configured individually based on its physical location. In multi-site deployments, DCs in different regions may have different timezones - this is normal and does not affect AD replication (which uses UTC internally).
+> [!NOTE]
+> Timezone does not sync via Active Directory. Each server must be configured individually based on its physical location. In multi-site deployments, DCs in different regions may have different timezones - this is normal and does not affect AD replication (which uses UTC internally).
 
 ### Configure DNS
 
 **On H-WIN-DC2:**
 
-> **Note:** Interface name may vary. Run `Get-NetAdapter` to confirm.
+> [!NOTE]
+> Interface name may vary. Run `Get-NetAdapter` to confirm.
 
 ```powershell
+# [H-WIN-DC2]
 # Update DNS to HQ DC (required for domain operations)
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "172.16.0.10"
 
@@ -173,7 +182,8 @@ Get-DnsClientServerAddress -InterfaceAlias "Ethernet" -AddressFamily IPv4
 nslookup reginleif.io 172.16.0.10
 ```
 
-> **Note:** DNS was initially set to `172.17.0.1` (OPNsense) in Project 6 for basic connectivity. Now that the VPN tunnel is active, DC2 can reach the HQ DC for Active Directory DNS.
+> [!NOTE]
+> DNS was initially set to `172.17.0.1` (OPNsense) in Project 6 for basic connectivity. Now that the VPN tunnel is active, DC2 can reach the HQ DC for Active Directory DNS.
 
 ---
 
@@ -186,6 +196,7 @@ Before configuring NTP, ensure DC1 has the correct timezone set. While AD uses U
 **On DC1 (`P-WIN-DC1`):**
 
 ```powershell
+# [P-WIN-DC1]
 # Check current timezone
 Get-TimeZone
 
@@ -193,9 +204,11 @@ Get-TimeZone
 Set-TimeZone -Id "Romance Standard Time"
 ```
 
-> **Proxmox Time Sync Warning:** Windows expects the hardware clock (RTC) to use local time, but Proxmox defaults to UTC. This mismatch causes Kerberos time skew errors, breaking RDP and domain authentication. Additionally, the QEMU Guest Agent can interfere with Windows time synchronization. On your **Proxmox host**, enable local time for all Windows VMs:
+> [!WARNING]
+> Windows expects the hardware clock (RTC) to use local time, but Proxmox defaults to UTC. This mismatch causes Kerberos time skew errors, breaking RDP and domain authentication. Additionally, the QEMU Guest Agent can interfere with Windows time synchronization. On your **Proxmox host**, enable local time for all Windows VMs:
 >
 > ```bash
+> # [Proxmox Host]
 > # Replace VMID with your VM ID (e.g., 100)
 > qm set VMID -localtime 1
 > ```
@@ -232,6 +245,7 @@ The **PDC Emulator** (by default, the first DC in the forest - `P-WIN-DC1`) is t
 **On DC1 (`P-WIN-DC1`):**
 
 ```powershell
+# [P-WIN-DC1]
 # Configure external NTP servers (pool.ntp.org recommended)
 w32tm /config /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org" /syncfromflags:manual /reliable:yes /update
 
@@ -262,6 +276,7 @@ Stratum: 2 or 3
 **On H-WIN-DC2:**
 
 ```powershell
+# [H-WIN-DC2]
 # Install AD Domain Services role
 Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 
@@ -274,7 +289,8 @@ Install-ADDSDomainController `
     -Force
 ```
 
-> **Note:** The command will prompt for the Directory Services Restore Mode (DSRM) password.
+> [!NOTE]
+> The command will prompt for the Directory Services Restore Mode (DSRM) password.
 
 **Post-Reboot:** Server restarts automatically. DC2 is now a fully functional domain controller in the Branch site.
 
@@ -295,6 +311,7 @@ After promotion, DC2 must sync time from the domain hierarchy (PDC Emulator on D
 **On DC2 (`H-WIN-DC2`):**
 
 ```powershell
+# [H-WIN-DC2]
 # Configure DC2 to sync from domain hierarchy
 w32tm /config /syncfromflags:DOMHIER /update
 
@@ -348,6 +365,7 @@ Before changing DC1, confirm DC2's DNS service is operational.
 **On DC2 (`H-WIN-DC2`):**
 
 ```powershell
+# [H-WIN-DC2]
 # Check DNS Server service is running
 Get-Service -Name DNS
 
@@ -368,6 +386,7 @@ Once DC2 DNS is verified, update DC1 to use the reciprocal configuration.
 **On DC1 (`P-WIN-DC1`):**
 
 ```powershell
+# [P-WIN-DC1]
 # Update DNS server addresses - partner DC first, own static IP second
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "172.17.0.10", "172.16.0.10"
 
@@ -378,6 +397,7 @@ Get-DnsClientServerAddress -InterfaceAlias "Ethernet"
 **On DC2 (`H-WIN-DC2`):**
 
 ```powershell
+# [H-WIN-DC2]
 # Update DNS server addresses - partner DC first, own static IP second
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses "172.16.0.10", "172.17.0.10"
 
@@ -407,6 +427,7 @@ Before finalizing DNS configuration, create reverse lookup zones to enable PTR r
 **On DC1 (`P-WIN-DC1`):**
 
 ```powershell
+# [P-WIN-DC1]
 # Create reverse zones for both subnets with Forest-wide replication
 Add-DnsServerPrimaryZone -NetworkID "172.16.0.0/24" -ReplicationScope "Forest"
 Add-DnsServerPrimaryZone -NetworkID "172.17.0.0/24" -ReplicationScope "Forest"
@@ -449,6 +470,7 @@ Domain client queries "google.com"
 **On DC1 (`P-WIN-DC1`):**
 
 ```powershell
+# [P-WIN-DC1]
 # Add OPNsense as DNS forwarder
 Add-DnsServerForwarder -IPAddress "172.16.0.1"
 
@@ -459,6 +481,7 @@ Get-DnsServerForwarder
 **On DC2 (`H-WIN-DC2`):**
 
 ```powershell
+# [H-WIN-DC2]
 # Add OPNsense as DNS forwarder
 Add-DnsServerForwarder -IPAddress "172.17.0.1"
 
@@ -485,6 +508,7 @@ Confirm DC2 is syncing from DC1 (configured in Section 5).
 **On DC2 (`H-WIN-DC2`):**
 
 ```powershell
+# [H-WIN-DC2]
 # Verify time source
 w32tm /query /source
 

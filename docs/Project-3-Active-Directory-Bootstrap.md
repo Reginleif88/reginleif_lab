@@ -25,9 +25,10 @@ From the console, use sconfig to enable RDP for easier management:
 
 ### Configure Hostname and Network
 
-In powershell or sconfig
+In PowerShell or sconfig
 
 ```powershell
+# [P-WIN-DC1]
 # Set hostname
 Rename-Computer -NewName "P-WIN-DC1" -Restart
 
@@ -42,7 +43,8 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" `
     -ServerAddresses "127.0.0.1"
 ```
 
-> **Note:** Interface name may vary. Run `Get-NetAdapter` to confirm.
+> [!NOTE]
+> Interface name may vary. Run `Get-NetAdapter` to confirm.
 
 ---
 
@@ -51,6 +53,7 @@ Set-DnsClientServerAddress -InterfaceAlias "Ethernet" `
 Can be executed via RDP to allow copy-paste.
 
 ```powershell
+# [P-WIN-DC1]
 # Install AD Bits
 Install-WindowsFeature AD-Domain-Services -IncludeManagementTools
 
@@ -62,7 +65,8 @@ Install-ADDSForest `
     -Force
 ```
 
-> **Note:** The command will prompt for the Directory Services Restore Mode (DSRM) password.
+> [!NOTE]
+> The command will prompt for the Directory Services Restore Mode (DSRM) password.
 
 ---
 
@@ -107,6 +111,7 @@ Verify the Domain Controller is functioning correctly after promotion.
 Create a Group Policy to disable automatic updates for all domain-joined machines until centralized update management (WSUS) is configured.
 
 ```powershell
+# [P-WIN-DC1]
 # Create new GPO
 New-GPO -Name "Disable Windows Update" -Comment "Temporary: Disable updates until WSUS is configured"
 

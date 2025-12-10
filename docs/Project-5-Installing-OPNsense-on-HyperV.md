@@ -13,6 +13,8 @@ Deploy OPNsense (`OPNsenseBranch`) on Hyper-V to serve as the secure gateway and
 
 ## 1. VM Hardware Configuration
 
+Configure the Hyper-V virtual machine. Generation 2 VMs provide UEFI boot.
+
 * **Generation:** Generation 2 (UEFI)
 * **Secure Boot:** **Disabled** (Crucial: FreeBSD will not boot with Microsoft Secure Boot).
 * **Processor:** 2 Virtual Processors.
@@ -35,6 +37,8 @@ Before booting, ensure Hyper-V has the correct Virtual Switches:
 ---
 
 ## 3. Base Installation
+
+Install OPNsense from the ISO to the virtual disk.
 
 1. Boot `OPNsense-dvd-amd64.iso`.
 2. Login as `installer` / `opnsense`.
@@ -162,6 +166,7 @@ If WAN uses DHCP, the upstream router may push its own DNS servers, overriding y
 From the OPNsense shell (console or SSH, or use GUI):
 
 ```sh
+# [OPNsenseBranch]
 ping google.com
 ping 1.1.1.1
 ```

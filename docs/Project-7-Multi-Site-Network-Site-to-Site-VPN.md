@@ -41,7 +41,9 @@ Simulate a corporate **"Headquarters vs. Branch"** topology. Connect the Proxmox
 
 **Pre-requisite:** `os-wireguard` is installed by default on modern OPNsense
 
-#### Step 0: Create Firewall Alias (Both Sites)
+---
+
+### Step 0: Create Firewall Alias (Both Sites)
 
 Before configuring WireGuard, create an alias to represent all trusted lab networks. This follows enterprise best practices for zone-based firewall management and will be used in firewall rules throughout this project.
 
@@ -63,7 +65,7 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
 
 ---
 
-#### Step 1: HQ Configuration (The Server)
+### Step 1: HQ Configuration (The Server)
 
 **Navigate to OPNsenseHQ (`172.16.0.1`) Web Interface:**
 
@@ -181,7 +183,7 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
 
 ---
 
-#### Step 2: Branch Configuration (The Client)
+### Step 2: Branch Configuration (The Client)
 
 **Navigate to OPNsenseBranch (`172.17.0.1`) Web Interface:**
 
@@ -289,7 +291,7 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
 
 ---
 
-#### Step 3: Initial Tunnel Testing
+### Step 3: Initial Tunnel Testing
 
 After both sides are configured, verify connectivity:
 
@@ -315,9 +317,10 @@ After both sides are configured, verify connectivity:
 
 ---
 
-#### Step 4: Gateway Configuration (Optional)
+### Step 4: Gateway Configuration (Optional)
 
-> **Note:** Interface assignment and MSS clamping were completed in Step 1 (HQ) and Step 2 (Branch) during step 9. This section covers optional gateway configuration for advanced routing scenarios.
+> [!NOTE]
+> Interface assignment and MSS clamping were completed in Step 1 (HQ) and Step 2 (Branch) during step 9. This section covers optional gateway configuration for advanced routing scenarios.
 
 **On both OPNsenseHQ and OPNsenseBranch:**
 
@@ -369,7 +372,8 @@ After both sides are configured, verify connectivity:
 
    > **Troubleshooting tip:** If the tunnel handshake is working (check VPN > WireGuard > Status) but no traffic flows, check that gateway monitoring is either disabled or has a valid Monitor IP configured.
    >
-   > **Known Issue:** There are [active bugs in OPNsense 25.x](https://github.com/opnsense/core/issues/8990) related to gateway monitoring and WireGuard failover. In multi-WAN scenarios, gateways may incorrectly report as "up" when down, or disabled gateways may be selected as default. If you experience unexpected failover behavior, a firewall reboot may be required as a temporary workaround.
+   > [!WARNING]
+   > There are [active bugs in OPNsense 25.x](https://github.com/opnsense/core/issues/8990) related to gateway monitoring and WireGuard failover. In multi-WAN scenarios, gateways may incorrectly report as "up" when down, or disabled gateways may be selected as default. If you experience unexpected failover behavior, a firewall reboot may be required as a temporary workaround.
 
 ---
 
@@ -386,7 +390,8 @@ After both sides are configured, verify connectivity:
 
 ### C. Firewall Rules Summary
 
-> **Note:** Detailed step-by-step firewall configuration is provided in Section B above (Steps 0, 1, and 2). This section serves as a reference summary of all required firewall rules.
+> [!NOTE]
+> Detailed step-by-step firewall configuration is provided in Section B above (Steps 0, 1, and 2). This section serves as a reference summary of all required firewall rules.
 
 #### Prerequisites
 
@@ -416,7 +421,8 @@ After both sides are configured, verify connectivity:
 * **Description:** Allow all inter-site traffic through VPN tunnel
 * **Configured in:** Step 1 (HQ) and Step 2 (Branch), step 10
 
-> **Note:** The WireGuard interface rule permits all inter-site traffic including AD replication (LDAP, Kerberos, RPC), file sharing (SMB), DNS queries, and road warrior VPN access. The alias ensures traffic from any trusted network can reach any other trusted network.
+> [!NOTE]
+> The WireGuard interface rule permits all inter-site traffic including AD replication (LDAP, Kerberos, RPC), file sharing (SMB), DNS queries, and road warrior VPN access. The alias ensures traffic from any trusted network can reach any other trusted network.
 
 ---
 
