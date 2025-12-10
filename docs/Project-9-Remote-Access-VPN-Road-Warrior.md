@@ -1,8 +1,8 @@
 ---
 title: "Project 9: Remote Access VPN (Road Warrior)"
-tags: [OPNsense, networking, vpn, royal-server, remote-access]
+tags: [vpn, configuration, opnsense, royal-ts]
 sites: [hq, wg-peers]
-status: planned
+status: completed
 ---
 
 ## Goal

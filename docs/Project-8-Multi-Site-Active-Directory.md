@@ -1,6 +1,6 @@
 ---
 title: "Project 8: Multi-Site Active Directory Configuration"
-tags: [active-directory, windows-server, dns, replication]
+tags: [active-directory, integration, windows-server, dns]
 sites: [hq, branch]
 status: completed
 ---

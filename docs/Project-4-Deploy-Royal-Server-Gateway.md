@@ -1,6 +1,6 @@
 ---
 title: "Project 4: Deploy Royal Server Gateway"
-tags: [active-directory, royalts, setup, windows]
+tags: [royal-ts, deployment, windows-server, active-directory]
 sites: [hq]
 status: completed
 ---
@@ -9,10 +9,10 @@ status: completed
 
 Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act as a secure gateway for RDP/SSH connections and a central management point for the homelab.
 
+---
+
 > [!NOTE]
 > **Optional Project:** This project is useful for practicing enterprise remote access patterns such as bastion hosts, gateway-based access, and centralized credential management.
-
----
 
 ## 1. VM Hardware Configuration
 

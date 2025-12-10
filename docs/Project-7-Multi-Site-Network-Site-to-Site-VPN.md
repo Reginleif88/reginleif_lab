@@ -1,6 +1,6 @@
 ---
 title: "Project 7: Multi-Site Network (Site-to-Site VPN)"
-tags: [OPNsense, networking, vpn, proxmox, hyper-v, active-directory]
+tags: [vpn, integration, opnsense, proxmox, hyper-v, active-directory]
 sites: [hq, branch]
 status: completed
 ---

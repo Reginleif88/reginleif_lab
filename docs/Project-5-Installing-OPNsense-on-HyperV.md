@@ -1,6 +1,6 @@
 ---
 title: "Project 5: Installing OPNsense on HyperV (Branch)"
-tags: [OPNsense, networking, hyper-v, setup, branch]
+tags: [opnsense, deployment, hyper-v]
 sites: [branch]
 status: completed
 ---

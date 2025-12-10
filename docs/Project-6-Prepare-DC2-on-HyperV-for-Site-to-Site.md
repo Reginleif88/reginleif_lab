@@ -1,6 +1,6 @@
 ---
 title: "Project 6: Prepare DC2 on HyperV for Site-to-Site"
-tags: [active-directory, hyper-v, windows-server, site-to-site]
+tags: [active-directory, configuration, windows-server, hyper-v]
 sites: [branch]
 status: completed
 ---

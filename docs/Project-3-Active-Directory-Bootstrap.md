@@ -1,6 +1,6 @@
 ---
 title: "Project 3: Active Directory Bootstrap"
-tags: [active-directory, powershell, setup, windows]
+tags: [active-directory, deployment, windows-server, powershell]
 sites: [hq]
 status: completed
 ---
