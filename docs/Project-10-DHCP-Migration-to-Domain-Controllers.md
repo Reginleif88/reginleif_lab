@@ -20,6 +20,7 @@ The following table summarizes DHCP configuration per site:
 
 > [!NOTE]
 > Each site has a single DHCP server with no failover configured. This is acceptable for lab purposes where brief outages are tolerable. For production resilience, DHCP failover between partner servers would be implemented. A future project will add dedicated DHCP servers with failover at each site.
+
 > [!TIP]
 > This project demonstrates both configuration methods:
 >
@@ -225,6 +226,9 @@ Set-DhcpServerSetting -ComputerName localhost -ConflictDetectionAttempts 2
 
 > [!NOTE]
 > Conflict detection adds ~2 seconds to lease acquisition (time for ping attempts). For lab environments with few static IPs, this minor delay provides worthwhile protection against misconfigurations.
+
+> [!NOTE]
+> **After implementing VLAN segmentation (Project 11)**, DHCP clients on different VLANs than the DHCP server will require DHCP relay configuration. See **Project 11** for DHCP relay setup on OPNsense.
 
 ---
 

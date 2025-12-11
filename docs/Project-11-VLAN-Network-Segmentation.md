@@ -2,7 +2,7 @@
 title: "Project 11: VLAN Network Segmentation"
 tags: [vlan, network, opnsense, proxmox, hyper-v, segmentation]
 sites: [hq, branch]
-status: in-progress
+status: completed
 ---
 
 ## Goal
@@ -65,6 +65,7 @@ Each VLAN follows a consistent scheme:
 
 > [!NOTE]
 > The third octet matches the VLAN ID for easy mental mapping:
+>
 > - VLAN 5 = 172.16.**5**.0/24 (HQ) or 172.17.**5**.0/24 (Branch)
 > - VLAN 10 = 172.16.**10**.0/24 (HQ) or 172.17.**10**.0/24 (Branch)
 
@@ -872,7 +873,67 @@ Get-DnsServerZone | Where-Object { $_.ZoneName -like "*.in-addr.arpa" }
 
 ---
 
-## 7. AD Sites and Subnets
+## 7. Update DNS Forwarders
+
+After migrating to VLANs, the DNS forwarders configured in Project 8 are now pointing to the old flat network gateway IPs that no longer exist. Update them to point to the new Infrastructure VLAN gateways.
+
+### Why DNS Forwarders Matter
+
+Domain Controllers are authoritative for the `reginleif.io` zone but cannot resolve external domains (like `microsoft.com`, `github.com`) without forwarders. The forwarders tell the DC where to send queries for domains it doesn't manage.
+
+**Old configuration (Project 8):**
+- DC1: `172.16.0.1` (removed in Section 1.C)
+- DC2: `172.17.0.1` (removed in Section 1.C)
+
+**New configuration:**
+- DC1: `172.16.5.1` (Infrastructure VLAN gateway)
+- DC2: `172.17.5.1` (Infrastructure VLAN gateway)
+
+### A. Update DC1 Forwarder
+
+```powershell
+# [P-WIN-DC1]
+# Remove old forwarder
+Remove-DnsServerForwarder -IPAddress "172.16.0.1" -Force -ErrorAction SilentlyContinue
+
+# Add new forwarder pointing to Infrastructure VLAN gateway
+Add-DnsServerForwarder -IPAddress "172.16.5.1"
+
+# Verify forwarder configuration
+Get-DnsServerForwarder
+```
+
+### B. Update DC2 Forwarder
+
+```powershell
+# [H-WIN-DC2]
+# Remove old forwarder
+Remove-DnsServerForwarder -IPAddress "172.17.0.1" -Force -ErrorAction SilentlyContinue
+
+# Add new forwarder pointing to Infrastructure VLAN gateway
+Add-DnsServerForwarder -IPAddress "172.17.5.1"
+
+# Verify forwarder configuration
+Get-DnsServerForwarder
+```
+
+### C. Test External Resolution
+
+```powershell
+# [Either DC]
+# Test external DNS resolution
+nslookup google.com
+nslookup microsoft.com
+
+# Should resolve successfully now
+```
+
+> [!NOTE]
+> If external DNS resolution still fails, verify OPNsense is configured to forward DNS queries to upstream servers (like a public DNS 1.1.1.1/8.8.8.8). Check **Services > Unbound DNS > General** in OPNsense.
+
+---
+
+## 8. AD Sites and Subnets
 
 Register the new VLAN subnets in Active Directory Sites and Services so clients authenticate against the correct DC. Update the old Infrastructure subnet to the new VLAN 5 subnet.
 
@@ -900,7 +961,7 @@ Get-ADReplicationSubnet -Filter * | Format-Table Name, Site
 
 ---
 
-## 8. Windows Firewall Notes
+## 9. Windows Firewall Notes
 
 > [!NOTE]
 > Windows Firewall updates are performed inline during each VM migration to ensure connectivity before AD replication:
@@ -917,7 +978,96 @@ Get-ADReplicationSubnet -Filter * | Format-Table Name, Site
 
 ---
 
-## 9. Validation
+## 10. Configure DHCP Relay
+
+> [!IMPORTANT]
+> **DHCP relay is REQUIRED for clients to receive IP addresses.**
+>
+> After implementing VLAN segmentation, your DHCP servers (DC1 and DC2) are on **VLAN 5 (Infrastructure)** while clients are on **VLAN 10 (Clients)**. DHCP uses broadcast traffic that **cannot cross VLANs** without a relay agent.
+
+### Why DHCP Relay is Needed
+
+DHCP operates using broadcast packets:
+
+1. **Client** broadcasts DHCP DISCOVER on its local subnet (VLAN 10)
+2. **Without relay**: Broadcast stops at VLAN boundary, never reaches DHCP server on VLAN 5
+3. **With relay**: OPNsense intercepts broadcast, converts to unicast, forwards to DHCP server
+4. **DHCP server** responds to relay agent, which forwards response back to client
+
+```text
+VLAN 10 (Clients)          OPNsense (Relay)        VLAN 5 (Infrastructure)
+┌──────────────┐           ┌──────────────┐        ┌──────────────┐
+│ Client PC    │ DISCOVER  │  DHCP Relay  │ RELAY  │ P-WIN-DC1    │
+│ 172.16.10.x  │ ────────► │  forwards    │ ─────► │ 172.16.5.10  │
+│              │ broadcast │  as unicast  │ unicast│ DHCP Server  │
+│              │           │              │        │              │
+│              │ ◄──────── │ ◄─────────── │ ◄───── │              │
+│              │   OFFER   │    OFFER     │  OFFER │              │
+└──────────────┘           └──────────────┘        └──────────────┘
+```
+
+### A. Configure DHCP Relay on HQ OPNsense
+
+**OPNsense Web GUI (HQ) - OPNsense 25.x:**
+
+#### Step 1: Add Relay Destination (DHCP Server)
+
+1. Navigate to **Services > DHCPv4 > Relay > Destinations**
+2. Click **+** to add a new destination
+3. Configure:
+   - **Enabled**: ✅ Checked
+   - **Name**: `DC1-DHCP`
+   - **Server Address**: `172.16.5.10`
+4. **Save**
+
+#### Step 2: Add Relay Agents (Listening Interfaces)
+
+1. Navigate to **Services > DHCPv4 > Relay > Relays**
+2. Click **+** to add a new relay agent
+3. Configure:
+   - **Enabled**: ✅ Checked
+   - **Interface**: `CLIENTS` (VLAN 10)
+   - **Destination**: Select `DC1-DHCP` (created in Step 1)
+4. **Save** 
+
+#### Step 3: Apply Changes
+
+1. **Apply changes** (button at top of page)
+2. Verify service is running: **System > Diagnostics > Services**
+   - Find `dhcrelay` and verify status is **Running**
+
+### B. Configure DHCP Relay on Branch OPNsense
+
+**OPNsense Web GUI (Branch) - OPNsense 25.x:**
+
+#### Step 1: Add Relay Destination (DHCP Server)
+
+1. Navigate to **Services > DHCPv4 > Relay > Destinations**
+2. Click **+** to add a new destination
+3. Configure:
+   - **Enabled**: ✅ Checked
+   - **Name**: `DC2-DHCP`
+   - **Server Address**: `172.17.5.10`
+4. **Save**
+
+#### Step 2: Add Relay Agents (Listening Interfaces)
+
+1. Navigate to **Services > DHCPv4 > Relay > Relays**
+2. Click **+** to add a new relay agent
+3. Configure:
+   - **Enabled**: ✅ Checked
+   - **Interface**: `CLIENTS` (VLAN 10)
+   - **Destination**: Select `DC2-DHCP` (created in Step 1)
+4. **Save**
+
+#### Step 3: Apply Changes
+
+1. **Apply changes**
+2. Verify service is running: **System > Diagnostics > Services** → `dhcrelay`
+
+---
+
+## 11. Validation
 
 ### A. OPNsense Verification
 
@@ -940,6 +1090,8 @@ Get-ADReplicationSubnet -Filter * | Format-Table Name, Site
 - [ ] Test VM can ping gateway (172.16.10.1)
 - [ ] Test VM can ping DC (172.16.5.10)
 - [ ] Test VM can resolve DNS (nslookup reginleif.io)
+- [ ] DCs can resolve external domains (nslookup google.com)
+- [ ] DNS forwarders updated to new VLAN gateways (172.16.5.1, 172.17.5.1)
 - [ ] Cross-site: HQ VLAN 10 can ping Branch DC (172.17.5.10)
 - [ ] Road Warrior can reach new VLANs
 - [ ] AD subnets registered in Sites and Services
