@@ -23,7 +23,9 @@ This project implements a fully functional **multi-site enterprise network** wit
 
 - **Site-to-Site VPN** connecting two physically separate sites
 - **Active Directory** forest with cross-site replication
+- **VLAN segmentation** for network isolation and security
 - **Centralized DHCP/DNS** with dynamic registration
+- **Volume activation** using hybrid ADBA/KMS strategy
 - **Secure remote access** for road warrior administration
 
 The goal is to mirror real corporate infrastructure patterns and not just "spin up a VM," but architect, secure, and document a production-grade environment.
@@ -63,7 +65,8 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 │ VLAN 20 - Servers             │         │ VLAN 20 - Servers             │
 │   172.16.20.0/24              │         │   172.17.20.0/24              │
 │   ├─ .1  Gateway              │         │   └─ .1  Gateway              │
-│   └─ .11 P-WIN-SRV1           │         │                               │
+│   ├─ .11 P-WIN-SRV1           │         │                               │
+│   └─ .12 P-WIN-SRV2           │         │                               │
 │                               │         │                               │
 │ VLAN 99 - Management          │         │ VLAN 99 - Management          │
 │   172.16.99.0/24              │         │   172.17.99.0/24              │
@@ -85,10 +88,11 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 
 | Category | Technologies |
 |----------|-------------|
-| **Virtualization** | Proxmox VE, Windows Hyper-V, ESXi/vSphere |
+| **Virtualization** | Proxmox VE, Windows Hyper-V |
 | **Firewalls** | OPNsense (FreeBSD) |
 | **Directory Services** | Windows Server 2022, Active Directory, Group Policy |
 | **Networking** | WireGuard VPN, VLANs, NAT, DNS, DHCP |
+| **Licensing** | KMS (Key Management Service), ADBA (Active Directory Based Activation) |
 | **Automation** | PowerShell, Bash scripting |
 | **Remote Access** | Royal Server, RDP, SSH |
 
@@ -111,6 +115,7 @@ Each component is documented as a standalone project with step-by-step instructi
 | 9 | [Road Warrior VPN](docs/Project-9-Remote-Access-VPN-Road-Warrior.md) | Remote admin access via WireGuard |
 | 10 | [DHCP Migration to DCs](docs/Project-10-DHCP-Migration-to-Domain-Controllers.md) | AD-integrated DHCP with dynamic DNS |
 | 11 | [VLAN Network Segmentation](docs/Project-11-VLAN-Network-Segmentation.md) | Implement VLANs for network segmentation |
+| 12 | [Volume Activation (ADBA + KMS)](docs/Project-12-KMS-Key-Management-Service.md) | Hybrid activation using ADBA and KMS |
 
 ---
 
