@@ -331,7 +331,7 @@ NTP uses **stratum** to indicate distance from authoritative time source:
 
 **The fix (Proxmox):**
 
-This is a possible cause of time offet issues from what we saw in the lab even if Proxmox should set it up by default for Windows VMs.
+This is a possible cause of time offset issues from what we saw in the lab even if Proxmox should set it up by default for Windows VMs.
 
 ```bash
 # On Proxmox host (not Windows VM)
@@ -635,7 +635,7 @@ Solution: RID Master gives each DC a pool of RIDs:
 
 **For this lab:**
 
-All roles remain on **DC1 (HQ)** for now - this is fine for 2-DC environments. Large enterprises might split roles across DCs.
+All roles remain on **DC1 (HQ)** for now - this is fine for a 2-DC environment. Large enterprises might split roles across DCs.
 
 ### PDC Emulator Special Responsibilities
 
