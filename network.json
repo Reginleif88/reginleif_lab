@@ -87,10 +87,37 @@
           "id": "srv2",
           "name": "P-WIN-SRV2",
           "ip": "172.16.20.12",
-          "role": "WDS/MDT, AD CS, KMS",
+          "role": "KMS",
           "icon": "server",
           "vlan": 20,
-          "description": "Windows Deployment Services, Certificate Authority, Key Management Service"
+          "description": "Key Management Service (Volume Activation)"
+        },
+        {
+          "id": "srv3",
+          "name": "P-WIN-SRV3",
+          "ip": "172.16.20.13",
+          "role": "Enterprise Subordinate CA",
+          "icon": "server",
+          "vlan": 20,
+          "description": "Enterprise Subordinate CA (REGINLEIF-SUB-CA), Certificate Authority, IIS for CRL/AIA Distribution"
+        },
+        {
+          "id": "rootca",
+          "name": "P-WIN-ROOTCA",
+          "ip": "172.16.20.15",
+          "role": "Offline Root CA",
+          "icon": "shield",
+          "vlan": 20,
+          "description": "Standalone Root CA (REGINLEIF-ROOT-CA) - Offline, powered on annually for CRL renewal"
+        },
+        {
+          "id": "srv4",
+          "name": "P-WIN-SRV4",
+          "ip": "172.16.20.14",
+          "role": "NPS (RADIUS), WDS/MDT",
+          "icon": "server",
+          "vlan": 20,
+          "description": "Network Policy Server for RADIUS authentication; Windows Deployment Services and MDT for OS deployment"
         }
       ]
     },
@@ -127,9 +154,9 @@
     },
     "cloud": {
       "id": "cloud",
-      "name": "Cloud",
-      "subnet": "",
-      "gateway": "",
+      "name": "Cloud/Hybrid",
+      "description": "Placeholder for future cloud/hybrid integration - not yet implemented",
+      "vlans": {},
       "wan": "",
       "devices": []
     },

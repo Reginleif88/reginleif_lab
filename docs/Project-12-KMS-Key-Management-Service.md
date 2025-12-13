@@ -14,90 +14,11 @@ Implement a hybrid volume activation strategy using both ADBA and KMS:
 
 ---
 
-## Understanding Volume Activation
+## Background & Concepts
 
-Before diving into the configuration, it's important to understand how Microsoft volume activation works and why KMS is often the preferred choice.
+📚 **[View Background & Concepts](/concepts/project-12-concepts)**
 
-### Volume Activation Methods
-
-Microsoft offers three methods for activating volume-licensed products:
-
-| Method | How It Works | Best For |
-|:-------|:-------------|:---------|
-| **KMS** | Clients contact an on-premises server every 180 days | Large environments, mixed domain/non-domain |
-| **ADBA** | Activation stored in Active Directory, inherited via domain join | Domain-joined Windows only (no Office) |
-| **MAK** | One-time activation directly with Microsoft | Isolated machines, low device counts |
-
-### KMS (Key Management Service)
-
-KMS uses a client-server model where clients periodically contact the KMS host to maintain activation:
-
-```text
-┌─────────────────────┐         ┌─────────────────────┐
-│   KMS Client        │ ──────► │   KMS Host          │
-│   (GVLK installed)  │  :1688  │   (CSVLK installed) │
-│                     │ ◄────── │                     │
-│   Activated 180 days│         │   Tracks count      │
-└─────────────────────┘         └─────────────────────┘
-```
-
-**Key concepts:**
-
-- **CSVLK (Customer Specific Volume License Key)**: The KMS host key you get from VLSC. This key enables your server to act as a KMS host.
-- **GVLK (Generic Volume License Key)**: Pre-installed on volume media. This tells the client "I'm volume-licensed, go find a KMS server."
-- **Activation threshold**: KMS won't activate clients until a minimum count is reached:
-  - Windows Server: 5 unique clients
-  - Windows Client (10/11): 25 unique clients
-- **Activation period**: 180 days. Clients attempt renewal every 7 days.
-- **Auto-discovery**: Clients look for `_vlmcs._tcp.domain.com` SRV record in DNS.
-
-> [!NOTE]
-> The activation threshold is cumulative. Each unique machine ID (CMID) counts once, even if it requests activation multiple times. In a small lab, you may need to create temporary VMs or use the workaround of cloning machines to reach the threshold.
-
-### ADBA (Active Directory Based Activation)
-
-ADBA stores activation objects directly in Active Directory:
-
-```text
-┌─────────────────────┐         ┌─────────────────────┐
-│   Domain-Joined PC  │ ──────► │   Active Directory  │
-│                     │  LDAP   │   (Activation Object│
-│   Inherits activation│ ◄────── │   stored in forest) │
-│   automatically     │         │                     │
-└─────────────────────┘         └─────────────────────┘
-```
-
-**Advantages over KMS:**
-
-- **No threshold**: Activates even a single domain-joined machine
-- **No renewal needed**: Activation persists as long as the computer remains domain-joined
-- **No server dependency**: If the KMS host goes down, KMS clients eventually deactivate; ADBA clients don't
-
-**Limitations:**
-
-- **Domain-joined only**: Non-domain machines can't use ADBA
-- **Windows only**: Microsoft Office doesn't support ADBA
-- **Forest-level activation**: Requires Schema Admin rights to configure
-
-### Hybrid Activation Strategy
-
-This guide implements **both methods** to leverage the strengths of each:
-
-| Device Type | Activation Method | Why |
-|:------------|:------------------|:----|
-| Domain-joined servers | ADBA | No threshold, no renewal, survives KMS outage |
-| Domain-joined workstations | ADBA | Same benefits, instant activation on domain join |
-| DMZ servers | KMS | Can't access AD, need KMS fallback |
-| Workgroup machines | KMS | Not domain-joined, ADBA unavailable |
-| Microsoft Office | KMS | ADBA doesn't support Office products |
-
-**Activation priority order** (automatic):
-1. **ADBA** - Clients check AD first
-2. **KMS** - Falls back to KMS if ADBA unavailable
-3. **MAK** - Manual fallback if needed
-
-> [!TIP]
-> With this hybrid approach, domain-joined Windows devices activate instantly via ADBA. If the KMS server goes down, these devices remain activated. KMS handles everything else (Office, DMZ, workgroup).
+For educational context about volume licensing, MAK vs KMS vs ADBA activation methods, and CSVLK vs GVLK key types, see the dedicated concepts guide.
 
 ---
 

@@ -11,6 +11,14 @@ Implement VLAN segmentation at both sites, transforming the flat network into a 
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-11-concepts)**
+
+For educational context about VLAN fundamentals, 802.1Q trunking, inter-VLAN routing, and why VLAN 1 should be avoided, see the dedicated concepts guide.
+
+---
+
 ## Why NOT Use VLAN 1 for Domain Controllers?
 
 > [!WARNING]
@@ -75,7 +83,7 @@ Each VLAN follows a consistent scheme:
 |:---------|:-------|:----------|
 | Domain Controllers | Infrastructure VLAN (5) | Critical AD/DNS/DHCP services, avoids VLAN 1 security risks |
 | P-WIN-SRV1 | Servers VLAN (20) | Proper segmentation, IP changes to 172.16.20.11 |
-| WDS/MDT (Future Project) | Servers VLAN (20) | New W2022 server (172.16.20.12), DHCP relay configured for PXE |
+| WDS/MDT (Project 15) | Servers VLAN (20) | P-WIN-SRV4 (172.16.20.14), co-located with NPS, DHCP relay configured for PXE |
 | Firewall rules | Permissive initially | Allow all between trusted VLANs, tighten later |
 | DHCP | Clients VLAN only | Infrastructure, Servers, and Management use static IPs |
 
@@ -168,10 +176,36 @@ Configure with 172.17.x.1/24 addresses.
 | SERVERS | 20 | 172.17.20.1/24 |
 | MGMT | 99 | 172.17.99.1/24 |
 
+---
+
+> [!STOP]
+> **CRITICAL: DO NOT PROCEED TO SECTION 1.C YET**
+>
+> Before removing the old LAN interface IP in Section 1.C, you **MUST** complete **Section 2 (WireGuard VPN Updates)** to maintain remote access to OPNsense.
+>
+> **If you remove the LAN IP without updating WireGuard routing, you will lose remote access to OPNsense and need console access to recover.**
+>
+> **Recommended order:**
+> 1. ✓ Complete Section 1.A and 1.B (you just finished these)
+> 2. **→ Jump to Section 2 - WireGuard VPN Updates NOW**
+> 3. Return here to complete Section 1.C-F
+> 4. Continue to Section 3 (Proxmox Configuration)
+
+---
+
 ### C. Remove Old LAN Interface IP
 
+> [!IMPORTANT]
+> **Prerequisites for this step:**
+> - [ ] Section 1.A complete (VLAN interfaces created)
+> - [ ] Section 1.B complete (VLAN interfaces configured with IP addresses)
+> - [ ] **Section 2 complete (WireGuard VPN updated with new VLAN routes)**
+> - [ ] You have access to OPNsense via the WireGuard Road Warrior VPN (test by connecting from Admin PC)
+>
+> **If you have not completed Section 2, DO NOT PROCEED.** Jump to Section 2 now.
+
 > [!WARNING]
-> **Before removing the LAN IP**, ensure WireGuard VPN is updated (Section 2) so you maintain remote access to OPNsense via the Road Warrior VPN.
+> **You should have already completed Section 2 (WireGuard VPN Updates) before reaching this step.** If you haven't done so, stop here and complete Section 2 first. Removing the LAN IP without updating WireGuard routing will break remote access to OPNsense, requiring console access to recover.
 
 The original LAN interface (vtnet1 on HQ, hn1 on Branch) now serves as a trunk port for all VLAN traffic and no longer needs an IP address. Remove the old flat network IP to avoid confusion.
 
@@ -357,6 +391,9 @@ Enable VLAN tagging on the internal bridge so VMs can be assigned to specific VL
 
 P-WIN-DC1 (Domain Controller) moves from the native VLAN to the Infrastructure VLAN:
 
+> [!IMPORTANT]
+> **Use VM Console, NOT RDP:** Perform all migration steps from the Proxmox VM console (noVNC or SPICE), not RDP. Step 1 changes the VLAN tag, which will immediately disconnect any RDP sessions since the VM will no longer be reachable on the old network.
+
 1. **Update VM Network Settings:**
    - Select P-WIN-DC1 > **Hardware**
    - Double-click **Network Device**
@@ -375,8 +412,15 @@ Remove-NetIPAddress -InterfaceAlias "Ethernet" -IPAddress 172.16.0.10 -Confirm:$
 Remove-NetRoute -DestinationPrefix 0.0.0.0/0 -NextHop 172.16.0.1 -Confirm:$false
 
 # Update DNS to point to itself and H-WIN-DC2
+# Note: "Self first, partner second" - see explanation below
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet" -ServerAddresses 172.16.5.10,172.17.5.10
 ```
+
+> [!NOTE]
+> **DNS Order Change:** Project 8 configured DNS as "partner first, self second" to resolve the AD Island problem during initial DC2 promotion. Now that both DCs have stable DNS services, we switch to "self first, partner second" which ensures:
+> - Faster local resolution (no cross-site latency for local queries)
+> - Continued operation if the VPN tunnel is temporarily down
+> - Each DC remains authoritative for its local zone data
 
 3. **Update DNS Records:**
 
@@ -387,7 +431,7 @@ Remove-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "P-WIN-DC1" -RRTyp
 Add-DnsServerResourceRecordA -ZoneName "reginleif.io" -Name "P-WIN-DC1" -IPv4Address 172.16.5.10
 
 # Update reverse zone (PTR record)
-Add-DnsServerPrimaryZone -NetworkID "172.16.5.0/24" -ReplicationScope "Forest"
+Add-DnsServerPrimaryZone -NetworkID "172.16.5.0/24" -ReplicationScope "Forest" -ErrorAction SilentlyContinue
 ```
 
 > [!NOTE]
@@ -464,6 +508,9 @@ Get-NetConnectionProfile
 ### C. Migrate P-WIN-SRV1 to VLAN 20
 
 P-WIN-SRV1 (Royal Server) moves from Infrastructure to the Servers VLAN:
+
+> [!IMPORTANT]
+> **Use VM Console, NOT RDP:** Perform all migration steps from the Proxmox VM console, not RDP. Step 1 changes the VLAN tag, which will immediately disconnect any RDP sessions.
 
 1. **Update VM Network Settings:**
    - Select P-WIN-SRV1 > **Hardware**
@@ -632,6 +679,9 @@ Network Adapter Branch-LAN  Trunk
 
 H-WIN-DC2 (Domain Controller) moves from the native VLAN to the Infrastructure VLAN:
 
+> [!IMPORTANT]
+> **Use VM Console, NOT RDP:** Perform all migration steps from the Hyper-V VMConnect console, not RDP. Step 1 changes the VLAN tag, which will immediately disconnect any RDP sessions since the VM will no longer be reachable on the old network.
+
 1. **Update VM Network Settings (on Hyper-V host):**
 
 ```powershell
@@ -670,7 +720,7 @@ Remove-DnsServerResourceRecord -ZoneName "reginleif.io" -Name "H-WIN-DC2" -RRTyp
 Add-DnsServerResourceRecordA -ZoneName "reginleif.io" -Name "H-WIN-DC2" -IPv4Address 172.17.5.10
 
 # Update reverse zone (PTR record)
-Add-DnsServerPrimaryZone -NetworkID "172.17.5.0/24" -ReplicationScope "Forest"
+Add-DnsServerPrimaryZone -NetworkID "172.17.5.0/24" -ReplicationScope "Forest" -ErrorAction SilentlyContinue
 ```
 
 4. **Update Windows Firewall:**
@@ -769,7 +819,32 @@ Create DHCP scopes for the Clients VLAN at each site. Infrastructure, Server, an
 > [!NOTE]
 > DHCP scopes are server-specific and not replicated between domain controllers. Each DC manages its own scopes - P-WIN-DC1's scopes must be verified on P-WIN-DC1, and H-WIN-DC2's scopes must be verified on H-WIN-DC2.
 
-### A. HQ Client VLAN Scope (P-WIN-DC1)
+### A. Remove Old Flat Network Scopes
+
+Before creating new VLAN scopes, remove the old flat network scopes created in Project 10:
+
+```powershell
+# [P-WIN-DC1]
+# Remove old HQ flat network scope
+Remove-DhcpServerv4Scope -ScopeId 172.16.0.0 -Force -ErrorAction SilentlyContinue
+
+# Verify removal
+Get-DhcpServerv4Scope | Format-Table ScopeId, Name, State
+```
+
+```powershell
+# [H-WIN-DC2]
+# Remove old Branch flat network scope
+Remove-DhcpServerv4Scope -ScopeId 172.17.0.0 -Force -ErrorAction SilentlyContinue
+
+# Verify removal
+Get-DhcpServerv4Scope | Format-Table ScopeId, Name, State
+```
+
+> [!NOTE]
+> These scopes from Project 10 served the flat `172.16.0.0/24` and `172.17.0.0/24` networks which no longer exist after VLAN migration.
+
+### B. HQ Client VLAN Scope (P-WIN-DC1)
 
 ```powershell
 # [P-WIN-DC1]
@@ -792,7 +867,7 @@ Get-DhcpServerv4Scope -ScopeId 172.16.10.0
 Get-DhcpServerv4OptionValue -ScopeId 172.16.10.0
 ```
 
-### B. Branch Client VLAN Scope (H-WIN-DC2)
+### C. Branch Client VLAN Scope (H-WIN-DC2)
 
 ```powershell
 # [H-WIN-DC2]
@@ -815,7 +890,7 @@ Get-DhcpServerv4Scope -ScopeId 172.17.10.0
 Get-DhcpServerv4OptionValue -ScopeId 172.17.10.0
 ```
 
-### C. Verify All DHCP Scopes
+### D. Verify All DHCP Scopes
 
 After configuring all scopes, verify the complete DHCP configuration on each server:
 
@@ -857,7 +932,8 @@ Remove-DnsServerZone -Name "0.16.172.in-addr.arpa" -Force -ErrorAction SilentlyC
 Remove-DnsServerZone -Name "0.17.172.in-addr.arpa" -Force -ErrorAction SilentlyContinue
 
 # Create reverse zones with Forest-wide replication
-# Note: 172.16.5.0/24 and 172.17.5.0/24 may already exist from DC migration steps
+# Note: ErrorAction SilentlyContinue makes these commands idempotent - they won't fail if zones
+# already exist from DC migration steps in Sections 3.B and 4.B (172.16.5.0/24, 172.17.5.0/24)
 Add-DnsServerPrimaryZone -NetworkID "172.16.5.0/24" -ReplicationScope "Forest" -ErrorAction SilentlyContinue
 Add-DnsServerPrimaryZone -NetworkID "172.16.10.0/24" -ReplicationScope "Forest" -ErrorAction SilentlyContinue
 Add-DnsServerPrimaryZone -NetworkID "172.16.20.0/24" -ReplicationScope "Forest" -ErrorAction SilentlyContinue

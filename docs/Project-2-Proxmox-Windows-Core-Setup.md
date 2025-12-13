@@ -11,6 +11,14 @@ Create a repeatable process for deploying high-performance Windows Server Core V
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-02-concepts)**
+
+For educational context about Windows Server Core, VirtIO drivers, and VM deployment on Proxmox, see the dedicated concepts guide.
+
+---
+
 ## 1. VM Hardware Configuration
 
 Configure the Windows Server Core VM with these specifications.
@@ -34,8 +42,8 @@ Running the installer requires loading drivers manually since Windows doesn't se
 
 1. Mount `virtio-win.iso` as CD-ROM 2.
 2. At disk selection screen, click **Load Driver**.
-    * **Storage Driver Path:** `E:\vioscsi\2k22\amd64`
-    * **Network Driver Path:** `E:\NetKVM\2k22\amd64` (Do this now to save time later).
+    * **Storage Driver Path:** `E:\vioscsi\2k22\amd64` (replace `E:` with your VirtIO ISO drive letter)
+    * **Network Driver Path:** `E:\NetKVM\2k22\amd64` (replace `E:` with your VirtIO ISO drive letter)
 
 ---
 
@@ -46,12 +54,13 @@ Since there is no GUI, use these commands to finish the driver setup.
 ```powershell
 # [Windows Server]
 # 1. Exit sconfig to PowerShell
-exit #(option 15)
+exit  # (option 15)
 
 # 2. Find the VirtIO ISO drive letter
 Get-Volume
 
-# 3. Install VirtIO drivers + QEMU Guest Agent (adjust drive letter if needed)
+# 3. Install VirtIO drivers + QEMU Guest Agent
+# Note: Drive letter may vary (D:, E:, F:, etc.) - check output from Get-Volume above
 msiexec /i D:\virtio-win-gt-x64.msi
 
 # 4. Verify Network Driver is loaded

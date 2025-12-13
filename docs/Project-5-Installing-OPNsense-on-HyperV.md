@@ -11,6 +11,14 @@ Deploy OPNsense (`OPNsenseBranch`) on Hyper-V to serve as the secure gateway and
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-05-concepts)**
+
+For educational context about OPNsense deployment on Hyper-V, Generation 2 VMs, Secure Boot limitations, and virtualization networking differences, see the dedicated concepts guide.
+
+---
+
 ## 1. VM Hardware Configuration
 
 Configure the Hyper-V virtual machine. Generation 2 VMs provide UEFI boot.
