@@ -2,7 +2,7 @@
 title: "Project 13: Certificate Services (PKI)"
 tags: [pki, certificate-authority, ad-cs, windows-server, security, active-directory]
 sites: [hq]
-status: completed
+status: planned
 ---
 
 ## Goal

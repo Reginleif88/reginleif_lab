@@ -2,7 +2,7 @@
 title: "Project 15: Windows Deployment Services + MDT"
 tags: [wds, mdt, deployment, pxe, imaging, windows-adk, lite-touch]
 sites: [hq]
-status: completed
+status: planned
 ---
 
 ## Goal

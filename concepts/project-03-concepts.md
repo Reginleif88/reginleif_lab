@@ -197,7 +197,7 @@ This is why configuring accurate time synchronization (covered in the main proje
 > **In This Lab:** When P-WIN-DC1 is promoted, the KDC service automatically starts. All domain-joined machines will use Kerberos to authenticate to the DC and access network resources.
 
 > [!TIP]
-> **TL;DR :** Kerberos is why time sync matters. If clocks are off by more than 5 minutes, authentication fails completely. That's the single most important takeaway.
+> **TL;DR:** Kerberos is why time sync matters. If clocks are off by more than 5 minutes, authentication fails completely. That's the single most important takeaway.
 >
 > **Common failure:** "Clock skew too great" error = check your NTP configuration.
 
