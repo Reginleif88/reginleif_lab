@@ -11,6 +11,14 @@ Deploy Royal Server on a domain-joined Windows Server 2022 (`P-WIN-SRV1`) to act
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-04-concepts)**
+
+For educational context about bastion hosts, gateway-based access patterns, and credential management, see the dedicated concepts guide.
+
+---
+
 > [!NOTE]
 > **Optional Project:** This project is useful for practicing enterprise remote access patterns such as bastion hosts, gateway-based access, and centralized credential management.
 

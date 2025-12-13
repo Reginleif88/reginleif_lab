@@ -66,7 +66,10 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 │   172.16.20.0/24              │         │   172.17.20.0/24              │
 │   ├─ .1  Gateway              │         │   └─ .1  Gateway              │
 │   ├─ .11 P-WIN-SRV1           │         │                               │
-│   └─ .12 P-WIN-SRV2           │         │                               │
+│   ├─ .12 P-WIN-SRV2           │         │                               │
+│   ├─ .13 P-WIN-SRV3           │         │                               │
+│   ├─ .14 P-WIN-SRV4           │         │                               │
+│   └─ .15 P-WIN-ROOTCA         │         │                               │
 │                               │         │                               │
 │ VLAN 99 - Management          │         │ VLAN 99 - Management          │
 │   172.16.99.0/24              │         │   172.17.99.0/24              │
@@ -116,6 +119,27 @@ Each component is documented as a standalone project with step-by-step instructi
 | 10 | [DHCP Migration to DCs](docs/Project-10-DHCP-Migration-to-Domain-Controllers.md) | AD-integrated DHCP with dynamic DNS |
 | 11 | [VLAN Network Segmentation](docs/Project-11-VLAN-Network-Segmentation.md) | Implement VLANs for network segmentation |
 | 12 | [Volume Activation (ADBA + KMS)](docs/Project-12-KMS-Key-Management-Service.md) | Hybrid activation using ADBA and KMS |
+| 13 | [Certificate Services (PKI)](docs/Project-13-Certificate-Services-PKI.md) | Two-tier PKI with offline Root CA |
+| 14 | [RADIUS/NPS Authentication](docs/Project-14-RADIUS-NPS-Authentication.md) | Centralized firewall authentication via AD |
+| 15 | [Windows Deployment Services + MDT](docs/Project-15-Windows-Deployment-Services-MDT.md) | Lite-touch OS deployment infrastructure |
+
+---
+
+## Documentation Structure
+
+This repository separates **procedural documentation** from **conceptual education** to support both learning and execution workflows.
+
+### Project Files (`docs/Project-*.md`)
+Step-by-step procedural guides for implementing each project. Focus on execution and configuration.
+
+### Concept Files (`concepts/project-*-concepts.md`)
+Educational background content explaining the "why" and "what" behind each project.
+
+**Why separate concepts from procedures?**
+- **Focused learning:** Read concepts when learning, skip when executing
+- **Maintainability:** Update conceptual content without touching procedures
+- **Reusability:** Reference concepts across multiple projects
+- **Clarity:** Main project files focus on "how to do," concept files explain "why and what"
 
 ---
 

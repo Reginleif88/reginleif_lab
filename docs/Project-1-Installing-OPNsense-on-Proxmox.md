@@ -11,6 +11,17 @@ Deploy OPNsense (`OPNsenseHQ`) on Proxmox to serve as the secure gateway and fir
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-01-concepts)**
+
+For educational context about firewalls, NAT, virtualization networking, and DNS resolution, see the dedicated concepts guide.
+
+---
+
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing (`172.16.0.0/24`). IP addresses and network configuration will change when VLAN segmentation is implemented in Project 11. The gateway will move from `172.16.0.1` to VLAN-specific addresses (e.g., `172.16.5.1` for Infrastructure VLAN).
+
 ## 1. VM Hardware Configuration
 
 Configure the virtual machine with these specifications. Settings are optimized for OPNsense's FreeBSD base.

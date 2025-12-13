@@ -31,6 +31,14 @@ The following table summarizes DHCP configuration per site:
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-10-concepts)**
+
+For educational context about DHCP, the DORA process, lease lifecycle, and DHCP relay, see the dedicated concepts guide.
+
+---
+
 ## 1. Install DHCP Role
 
 ### Prerequisites - Install DHCP Management Tools (P-WIN-SRV1)

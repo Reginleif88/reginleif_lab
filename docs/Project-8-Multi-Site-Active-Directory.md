@@ -11,6 +11,14 @@ Configure Active Directory for multi-site operation after the WireGuard VPN tunn
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-08-concepts)**
+
+For educational context about multi-site Active Directory, Windows host firewall vs network firewall, and AD Sites and Services, see the dedicated concepts guide.
+
+---
+
 ## Prerequisites
 
 * Project 7 completed (Site-to-Site VPN working)
@@ -214,6 +222,9 @@ Set-TimeZone -Id "Romance Standard Time"
 > ```
 >
 > Reboot the VM after applying this change. If issues persist, check if the QEMU Guest Agent is installed and consider disabling its time sync functionality.
+
+> [!NOTE]
+> This Proxmox time configuration was also documented in **Project 3, Section 4** for P-WIN-DC1. If you're experiencing time sync issues on DC1, refer back to Project 3, Section 4 for detailed instructions and troubleshooting steps.
 
 ### Why Time Sync Must Be Configured First
 
@@ -420,6 +431,9 @@ repadmin /showrepl
 ```
 
 > **Why static IP instead of 127.0.0.1?** Microsoft recommends using the server's actual static IP rather than loopback because `127.0.0.1` doesn't bind to the network stack the same way. During boot or service restart scenarios, loopback may not resolve correctly. Using the static IP ensures consistent DNS behavior and aligns with enterprise best practices.
+
+> [!NOTE]
+> **DNS Order Evolution:** This project uses "partner DC first, self second" to resolve the immediate AD Island problem when DC2 is newly promoted. Project 11 (VLAN Segmentation) will reconfigure DNS to "self first, partner second" which is appropriate once both DCs have stable, production-ready DNS services. Both approaches are valid - the key fix here is eliminating `127.0.0.1` (loopback).
 
 ### Create Reverse DNS Zones
 

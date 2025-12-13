@@ -11,6 +11,14 @@ Deploy and prepare the Windows Server 2022 Core VM H-WIN-DC2 on Hyper-V as the s
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-06-concepts)**
+
+For educational context about Domain Controller requirements, static memory allocation, and AD replication preparation, see the dedicated concepts guide.
+
+---
+
 ## 1. VM Hardware Configuration
 
 Configure the Hyper-V VM for the Branch domain controller.
@@ -18,9 +26,21 @@ Configure the Hyper-V VM for the Branch domain controller.
 * **Generation:** Generation 2 (UEFI)
 * **Secure Boot:** Enabled (Windows Server supports Secure Boot on Hyper-V)
 * **Processor:** 4 Virtual Processors
-* **Memory:** 4096 MB (4 GB) - Dynamic Memory Recommended for efficiency.
+* **Memory:** 4096 MB (4 GB) - **Static Memory Required** (do not use Dynamic Memory for Domain Controllers)
 * **Network Adapter 1:** "Branch-LAN" (Internal/Private vSwitch) --> OPNsense LAN
 * **Disk:** 80 GB VHDX (or appropriate size)
+
+> [!WARNING]
+> **Why Static Memory for Domain Controllers?**
+>
+> Domain Controllers maintain an active directory database (NTDS.dit) that requires consistent memory allocation. Dynamic memory can cause serious issues:
+>
+> - **Database Corruption:** Memory ballooning events (when Hyper-V reclaims memory) can corrupt the NTDS.dit database during write operations
+> - **AD Replication Failures:** Insufficient memory during replication cycles causes replication errors and inconsistent directory data across DCs
+> - **Authentication Delays:** When memory is reclaimed, the DC may not have sufficient resources to handle authentication requests, causing login failures
+> - **Kerberos Time Skew:** Memory pressure can cause time sync issues, leading to Kerberos authentication failures
+>
+> **Microsoft explicitly recommends against using Dynamic Memory for production Domain Controllers.** While Hyper-V dynamic memory is generally safe for application servers and workstations, it should **never be used** for DCs. Always allocate static memory for Domain Controllers in both production and lab environments to ensure AD stability.
 
 ---
 

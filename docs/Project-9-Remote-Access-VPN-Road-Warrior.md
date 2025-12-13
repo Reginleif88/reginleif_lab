@@ -11,6 +11,14 @@ Configure a "Road Warrior" WireGuard peer for the Administrator's PC. This allow
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-09-concepts)**
+
+For educational context about Road Warrior VPN configurations, WireGuard client setup, and split tunneling considerations, see the dedicated concepts guide.
+
+---
+
 ## 1. Architecture Design
 
 | Role | Device | Physical IP | Tunnel IP |

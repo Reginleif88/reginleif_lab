@@ -11,6 +11,14 @@ Simulate a corporate **"Headquarters vs. Branch"** topology. Connect the Proxmox
 
 ---
 
+## Background & Concepts
+
+📚 **[View Background & Concepts](/concepts/project-07-concepts)**
+
+For educational context about VPNs, WireGuard, NAT traversal, and cryptokey routing, see the dedicated concepts guide.
+
+---
+
 ## 1. Architecture Design
 
 ### Topology Overview
