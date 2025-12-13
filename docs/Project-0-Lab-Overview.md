@@ -106,8 +106,6 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 
 ---
 
----
-
 ## Network Architecture
 
 ### Site Summary
@@ -231,7 +229,7 @@ Phase 4: Enterprise Services
 | **Deployment Focus** | P1-P3, P11, P15 | OS deployment infrastructure |
 
 > [!TIP]
-> Projects are designed to be completed in order. Each builds on previous configurations and knowledges.
+> Projects are designed to be completed in order. Each builds on previous configurations and knowledge.
 
 ---
 
