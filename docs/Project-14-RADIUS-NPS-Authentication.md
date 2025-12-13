@@ -2,7 +2,7 @@
 title: "Project 14: RADIUS/NPS Authentication"
 tags: [radius, nps, opnsense, authentication, active-directory, aaa, network-security]
 sites: [hq]
-status: completed
+status: planned
 ---
 
 ## Goal

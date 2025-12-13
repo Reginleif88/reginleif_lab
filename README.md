@@ -107,6 +107,7 @@ Each component is documented as a standalone project with step-by-step instructi
 
 | # | Project | Description |
 |:---|:---|:---|
+| 0 | [Lab Overview](docs/Project-0-Lab-Overview.md) | Architecture overview, network diagram, and getting started |
 | 1 | [OPNsense Gateway (HQ)](docs/Project-1-Installing-OPNsense-on-Proxmox.md) | Deploy OPNsense on Proxmox as HQ firewall |
 | 2 | [Windows Core VM Setup](docs/Project-2-Proxmox-Windows-Core-Setup.md) | High-performance Windows Server VMs with VirtIO |
 | 3 | [Active Directory Bootstrap](docs/Project-3-Active-Directory-Bootstrap.md) | Promote first DC, create forest root |
