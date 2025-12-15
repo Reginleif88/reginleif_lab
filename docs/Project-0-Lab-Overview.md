@@ -75,7 +75,6 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 │ VLAN 20 - Servers             │         │ VLAN 20 - Servers             │
 │   172.16.20.0/24              │         │   172.17.20.0/24              │
 │   ├─ .1  Gateway              │         │   └─ .1  Gateway              │
-│   ├─ .11 P-WIN-SRV1           │         │                               │
 │   ├─ .12 P-WIN-SRV2           │         │                               │
 │   ├─ .13 P-WIN-SRV3           │         │                               │
 │   ├─ .14 P-WIN-SRV4           │         │                               │
@@ -83,7 +82,8 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 │                               │         │                               │
 │ VLAN 99 - Management          │         │ VLAN 99 - Management          │
 │   172.16.99.0/24              │         │   172.17.99.0/24              │
-│   └─ .1  Gateway              │         │   └─ .1  Gateway              │
+│   ├─ .1  Gateway              │         │   └─ .1  Gateway              │
+│   └─ .11 P-WIN-SRV1           │         │                               │
 │                               │         │                               │
 └───────────────────────────────┘         └───────────────────────────────┘
         ▲
@@ -144,7 +144,7 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 |----------|------------|------|------|-------------|
 | OPNsenseHQ | 172.16.5.1 | 5 | Gateway/Firewall | Primary firewall and router for HQ site |
 | P-WIN-DC1 | 172.16.5.10 | 5 | Domain Controller | Primary DC, DNS, DHCP, Forest Root |
-| P-WIN-SRV1 | 172.16.20.11 | 20 | Royal Server | Remote access gateway |
+| P-WIN-SRV1 | 172.16.99.11 | 99 | Royal Server | Remote access gateway (bastion host) |
 | P-WIN-SRV2 | 172.16.20.12 | 20 | KMS | Key Management Service (Volume Activation) |
 | P-WIN-SRV3 | 172.16.20.13 | 20 | Enterprise Subordinate CA | Enterprise Subordinate CA (REGINLEIF-SUB-CA) |
 | P-WIN-SRV4 | 172.16.20.14 | 20 | NPS (RADIUS), WDS/MDT | Network Policy Server, OS deployment |
@@ -170,33 +170,40 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 ### Dependency Overview
 
 ```
-Phase 1: Foundation (Single Site)
+Foundation (Single Site)
 ┌─────┐   ┌─────┐   ┌─────┐   ┌─────┐
 │ P1  │──►│ P2  │──►│ P3  │──►│ P4  │
 └─────┘   └─────┘   └─────┘   └─────┘
 OPNsense   WinVM     AD        Royal
   HQ       Setup   Bootstrap   Server
 
-Phase 2: Multi-Site
+Multi-Site
 ┌─────┐   ┌─────┐   ┌─────┐   ┌─────┐   ┌─────┐
 │ P5  │──►│ P6  │──►│ P7  │──►│ P8  │──►│ P9  │
 └─────┘   └─────┘   └─────┘   └─────┘   └─────┘
 OPNsense   DC2      Site-to   Multi     Road
  Branch    Prep     Site VPN  Site AD   Warrior
 
-Phase 3: Infrastructure Services
+Infrastructure Services
 ┌─────┐   ┌─────┐   ┌─────┐
 │ P10 │──►│ P11 │──►│ P12 │
 └─────┘   └─────┘   └─────┘
 DHCP       VLANs    Volume
 Migration           Activation
 
-Phase 4: Enterprise Services
+Enterprise Services
 ┌─────┐   ┌─────┐   ┌─────┐
 │ P13 │──►│ P14 │──►│ P15 │
 └─────┘   └─────┘   └─────┘
  PKI      RADIUS     WDS
           /NPS       MDT
+
+Operations
+┌─────┐
+│ P16 │
+└─────┘
+Management
+Network
 ```
 
 ### Project Summary
@@ -218,6 +225,7 @@ Phase 4: Enterprise Services
 | 13 | [Certificate Services (PKI)](Project-13-Certificate-Services-PKI.md) | Two-tier PKI, Offline Root CA | Planned |
 | 14 | [RADIUS/NPS Authentication](Project-14-RADIUS-NPS-Authentication.md) | NPS, RADIUS, EAP | Planned |
 | 15 | [Windows Deployment Services](Project-15-Windows-Deployment-Services-MDT.md) | WDS, MDT, PXE Boot | Planned |
+| 16 | [Management Network Setup](Project-16-Management-Network-Setup.md) | Bastion Host, VPN Restriction, Monitoring Prep | In Progress |
 
 ### Learning Paths
 
