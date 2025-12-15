@@ -65,7 +65,6 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 │ VLAN 20 - Servers             │         │ VLAN 20 - Servers             │
 │   172.16.20.0/24              │         │   172.17.20.0/24              │
 │   ├─ .1  Gateway              │         │   └─ .1  Gateway              │
-│   ├─ .11 P-WIN-SRV1           │         │                               │
 │   ├─ .12 P-WIN-SRV2           │         │                               │
 │   ├─ .13 P-WIN-SRV3           │         │                               │
 │   ├─ .14 P-WIN-SRV4           │         │                               │
@@ -73,7 +72,8 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 │                               │         │                               │
 │ VLAN 99 - Management          │         │ VLAN 99 - Management          │
 │   172.16.99.0/24              │         │   172.17.99.0/24              │
-│   └─ .1  Gateway              │         │   └─ .1  Gateway              │
+│   ├─ .1  Gateway              │         │   └─ .1  Gateway              │
+│   └─ .11 P-WIN-SRV1           │         │                               │
 │                               │         │                               │
 └───────────────────────────────┘         └───────────────────────────────┘
         ▲
@@ -82,6 +82,7 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 ┌───────────────────────┐
 │ Admin PC              │
 │ 10.200.0.10           │
+│ (VLAN 99 Only)        │
 └───────────────────────┘
 ```
 
@@ -123,6 +124,7 @@ Each component is documented as a standalone project with step-by-step instructi
 | 13 | [Certificate Services (PKI)](docs/Project-13-Certificate-Services-PKI.md) | Two-tier PKI with offline Root CA |
 | 14 | [RADIUS/NPS Authentication](docs/Project-14-RADIUS-NPS-Authentication.md) | Centralized firewall authentication via AD |
 | 15 | [Windows Deployment Services + MDT](docs/Project-15-Windows-Deployment-Services-MDT.md) | Lite-touch OS deployment infrastructure |
+| 16 | [Management Network Setup](docs/Project-16-Management-Network-Setup.md) | Bastion host architecture, restricted VPN access |
 
 ---
 
