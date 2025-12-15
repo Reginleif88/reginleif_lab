@@ -16,6 +16,7 @@ Provide a comprehensive introduction to the reginleif.io enterprise homelab, inc
 This lab implements a fully functional **multi-site enterprise network** simulating a corporate headquarters and branch office environment. The goal is to mirror real corporate infrastructure patterns, not just "spin up a VM," but architect, secure, and document a production-grade environment.
 
 **Key features:**
+
 - Site-to-Site VPN connecting two physically separate sites
 - Active Directory forest with cross-site replication
 - VLAN segmentation for network isolation and security
@@ -121,9 +122,9 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 | VLAN | Name | HQ Subnet | Branch Subnet | Purpose | DHCP |
 |------|------|-----------|---------------|---------|------|
 | 1 | Default/Unused | N/A | N/A | Blackhole VLAN (untagged on trunks) | No |
-| 5 | Infrastructure | 172.16.5.0/24 | 172.17.5.0/24 | Domain Controllers only | No |
+| 5 | Infrastructure | 172.16.5.0/24 | 172.17.5.0/24 | Domain Controllers, DNS, DHCP, Gateways | No |
 | 10 | Clients | 172.16.10.0/24 | 172.17.10.0/24 | Windows 10/11 workstations | Yes (.30-.254) |
-| 20 | Servers | 172.16.20.0/24 | 172.17.20.0/24 | Member servers (Royal Server, WDS, etc.) | No |
+| 20 | Servers | 172.16.20.0/24 | 172.17.20.0/24 | Member servers (Royal Server, KMS, CA, NPS/RADIUS, WDS/MDT) | No |
 | 99 | Management | 172.16.99.0/24 | 172.17.99.0/24 | Admin access, out-of-band management | No |
 
 ### IP Addressing Convention
@@ -187,7 +188,7 @@ Phase 3: Infrastructure Services
 ┌─────┐   ┌─────┐   ┌─────┐
 │ P10 │──►│ P11 │──►│ P12 │
 └─────┘   └─────┘   └─────┘
- DHCP      VLANs    Volume
+DHCP       VLANs    Volume
 Migration           Activation
 
 Phase 4: Enterprise Services

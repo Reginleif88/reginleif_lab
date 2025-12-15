@@ -13,7 +13,7 @@
     "5": {
       "id": 5,
       "name": "Infrastructure",
-      "description": "Domain Controllers only",
+      "description": "Domain Controllers, DNS, DHCP, OPNsense gateways (Infrastructure core services)",
       "hq_subnet": "172.16.5.0/24",
       "branch_subnet": "172.17.5.0/24",
       "dhcp": false
@@ -30,7 +30,7 @@
     "20": {
       "id": 20,
       "name": "Servers",
-      "description": "Member servers (Royal Server, WDS, etc.)",
+      "description": "Member servers (Royal Server, KMS, CA, NPS/RADIUS, WDS/MDT)",
       "hq_subnet": "172.16.20.0/24",
       "branch_subnet": "172.17.20.0/24",
       "dhcp": false
@@ -60,6 +60,7 @@
           "id": "opnsense-hq",
           "name": "OPNsenseHQ",
           "ip": "172.16.5.1",
+          "os": "OPNsense (FreeBSD)",
           "role": "Gateway/Firewall",
           "icon": "shield",
           "vlan": 5,
@@ -69,42 +70,52 @@
           "id": "dc1",
           "name": "P-WIN-DC1",
           "ip": "172.16.5.10",
-          "role": "Domain Controller",
+          "os": "Windows Server 2022 Core",
+          "role": "DC, DNS, DHCP",
           "icon": "server",
           "vlan": 5,
+          "dns_servers": ["172.17.5.10", "172.16.5.10"],
+          "ad_site": "HQ-Proxmox",
           "description": "Primary DC, DNS, DHCP, Forest Root"
         },
         {
           "id": "srv1",
           "name": "P-WIN-SRV1",
           "ip": "172.16.20.11",
+          "os": "Windows Server 2022",
           "role": "Royal Server",
           "icon": "monitor",
           "vlan": 20,
+          "ports": [54899, 22],
           "description": "Remote access gateway"
         },
         {
           "id": "srv2",
           "name": "P-WIN-SRV2",
           "ip": "172.16.20.12",
+          "os": "Windows Server 2022",
           "role": "KMS",
           "icon": "server",
           "vlan": 20,
+          "ports": [1688],
           "description": "Key Management Service (Volume Activation)"
         },
         {
           "id": "srv3",
           "name": "P-WIN-SRV3",
           "ip": "172.16.20.13",
+          "os": "Windows Server 2022",
           "role": "Enterprise Subordinate CA",
           "icon": "server",
           "vlan": 20,
+          "ports": [80, 443],
           "description": "Enterprise Subordinate CA (REGINLEIF-SUB-CA), Certificate Authority, IIS for CRL/AIA Distribution"
         },
         {
           "id": "rootca",
           "name": "P-WIN-ROOTCA",
           "ip": "172.16.20.15",
+          "os": "Windows Server 2022",
           "role": "Offline Root CA",
           "icon": "shield",
           "vlan": 20,
@@ -114,9 +125,11 @@
           "id": "srv4",
           "name": "P-WIN-SRV4",
           "ip": "172.16.20.14",
+          "os": "Windows Server 2022",
           "role": "NPS (RADIUS), WDS/MDT",
           "icon": "server",
           "vlan": 20,
+          "ports": [1812, 1813, 69, 445],
           "description": "Network Policy Server for RADIUS authentication; Windows Deployment Services and MDT for OS deployment"
         }
       ]
@@ -136,6 +149,7 @@
           "id": "opnsense-branch",
           "name": "OPNsenseBranch",
           "ip": "172.17.5.1",
+          "os": "OPNsense (FreeBSD)",
           "role": "Gateway/Firewall",
           "icon": "shield",
           "vlan": 5,
@@ -145,9 +159,12 @@
           "id": "dc2",
           "name": "H-WIN-DC2",
           "ip": "172.17.5.10",
-          "role": "Domain Controller",
+          "os": "Windows Server 2022 Core",
+          "role": "DC, DNS, DHCP",
           "icon": "server",
           "vlan": 5,
+          "dns_servers": ["172.16.5.10", "172.17.5.10"],
+          "ad_site": "Branch-HyperV",
           "description": "Secondary DC, DNS, DHCP for Branch site"
         }
       ]
@@ -180,8 +197,10 @@
   },
   "tunnel": {
     "name": "WireGuard VPN",
+    "description": "Site-to-Site VPN carrying AD replication, DNS, and inter-site traffic",
     "protocol": "WireGuard",
     "port": 51820,
+    "keepalive": 25,
     "subnet": "10.200.0.0/24",
     "endpoints": {
       "hq": {
