@@ -81,13 +81,13 @@
         {
           "id": "srv1",
           "name": "P-WIN-SRV1",
-          "ip": "172.16.20.11",
+          "ip": "172.16.99.11",
           "os": "Windows Server 2022",
           "role": "Royal Server",
           "icon": "monitor",
-          "vlan": 20,
+          "vlan": 99,
           "ports": [54899, 22],
-          "description": "Remote access gateway"
+          "description": "Remote access gateway (bastion host on Management VLAN)"
         },
         {
           "id": "srv2",
@@ -217,9 +217,10 @@
       "branch_to_hq": ["172.16.5.0/24", "172.16.10.0/24", "172.16.20.0/24", "172.16.99.0/24"]
     },
     "peer_routes": {
-      "peers_to_hq": "172.16.0.0/16",
-      "peers_to_branch": "172.17.0.0/16",
-      "peers_to_tunnel": "10.200.0.0/24"
+      "peers_to_hq": "172.16.99.0/24",
+      "peers_to_branch": "172.17.99.0/24",
+      "peers_to_tunnel": "10.200.0.0/24",
+      "_comment": "Road Warriors restricted to Management VLANs only (Project 16). All other access via Royal Server gateway."
     }
   },
   "trusted_networks": [
