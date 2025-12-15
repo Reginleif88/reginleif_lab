@@ -83,7 +83,7 @@
           "name": "P-WIN-SRV1",
           "ip": "172.16.99.11",
           "os": "Windows Server 2022",
-          "role": "Royal Server",
+          "role": "Secure Gateway",
           "icon": "monitor",
           "vlan": 99,
           "ports": [54899, 22],
