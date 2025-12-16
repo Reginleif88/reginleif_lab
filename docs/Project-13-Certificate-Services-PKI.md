@@ -37,6 +37,10 @@ For educational context about PKI architecture, two-tier hierarchies, certificat
 | TCP/UDP | 389 | Domain Members | Domain Controllers | LDAP (CDP/AIA via AD) |
 | TCP | 636 | Domain Members | Domain Controllers | LDAPS (secure LDAP queries) |
 
+> **RPC and DCOM Explained:**
+> - **RPC (Remote Procedure Call)** uses port 135 as an "endpoint mapper" — when a client connects to 135, the server tells it which dynamic port (49152-65535) to use for the actual service.
+> - **DCOM (Distributed COM)** is Microsoft's protocol for remote object communication. Certificate enrollment uses DCOM to let domain computers request certificates from the CA. This is why the large dynamic port range is required.
+
 > [!TIP]
 > For the Root CA (P-WIN-ROOTCA), only temporary network access is needed during initial setup and annual CRL renewal. Consider disconnecting its network adapter when powered off.
 
@@ -758,6 +762,11 @@ Get-ChildItem "C:\PKIWeb\CertEnroll\"
 ## 13. Certificate Templates
 
 ### A. Create Computer Authentication Template
+
+> **What is 802.1X/EAP-TLS?**
+> - **802.1X** is a port-based network access control standard. It requires devices to authenticate before gaining network access — commonly used for wired Ethernet and Wi-Fi.
+> - **EAP-TLS** (Extensible Authentication Protocol with TLS) is the most secure 802.1X authentication method, using certificates instead of passwords. The computer presents its certificate to prove identity.
+> - This template enables domain computers to automatically receive certificates for 802.1X authentication, Wi-Fi enterprise networks, and mutual TLS scenarios.
 
 Open the Certificate Templates console:
 

@@ -280,6 +280,9 @@ Add permissive rules to each new VLAN interface allowing traffic between trusted
 > [!TIP]
 > The permissive rules mirror current flat network behavior. After validating connectivity, you can tighten rules to allow only specific ports between VLANs.
 
+> [!NOTE]
+> **Permissive Firewall Rules:** These broad "Protocol: any" rules simplify initial VLAN setup by allowing all traffic between trusted networks. This intentional permissiveness will be replaced with granular, service-specific port rules in **Project 18: Firewall Hardening**, where you'll learn exactly which ports each service requires.
+
 ### F. Verify Outbound NAT
 
 OPNsense in Hybrid Outbound NAT mode should automatically create NAT rules for new interfaces.

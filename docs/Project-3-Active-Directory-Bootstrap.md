@@ -19,6 +19,9 @@ For educational context about Active Directory, Domain Controllers, and Group Po
 
 ---
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing (`172.16.0.0/24`). After VLAN segmentation in Project 11, P-WIN-DC1 moves to `172.16.5.10` on the Infrastructure VLAN, and the gateway changes from `172.16.0.1` to `172.16.5.1`.
+
 ## 1. Prerequisites
 
 **VM Requirements:** Ensure P-WIN-DC1 was provisioned with at least 80 GB disk space per Project 2 specifications (AD database, SYSVOL, and logs require adequate storage).
@@ -96,6 +99,13 @@ Verify the Domain Controller is functioning correctly after promotion.
     ```powershell
     Get-Service ADWS, DNS, Netlogon, NTDS | Select Name, Status
     ```
+
+    | Service | Purpose |
+    |---------|---------|
+    | **ADWS** | Active Directory Web Services — provides a web service interface (TCP 9389) that PowerShell's AD module uses to communicate with AD. If this service is stopped, cmdlets like `Get-ADUser` will fail. |
+    | **DNS** | Provides name resolution for the domain. AD is tightly integrated with DNS for locating domain controllers and services. |
+    | **Netlogon** | Handles domain authentication, secure channel maintenance, and replication of the NETLOGON share (logon scripts, GPO files). |
+    | **NTDS** | The core AD database engine (ntds.dit). This is the actual directory service that stores all AD objects. |
 
 * **Check Shares:** Confirm SYSVOL and NETLOGON exist:
 

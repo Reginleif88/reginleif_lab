@@ -11,7 +11,8 @@
 
 set -e
 
-DIAGRAMS_DIR="../diagrams"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DIAGRAMS_DIR="$SCRIPT_DIR/../diagrams"
 
 # Check if drawio CLI is available
 if ! command -v drawio &> /dev/null; then
@@ -37,6 +38,14 @@ if [ -f "$DIAGRAMS_DIR/pki-diagram.drawio" ]; then
     drawio -x -f svg --transparent -o "$DIAGRAMS_DIR/pki-diagram.svg" "$DIAGRAMS_DIR/pki-diagram.drawio"
 else
     echo "  ⚠ pki-diagram.drawio not found, skipping"
+fi
+
+# Convert firewall diagram
+if [ -f "$DIAGRAMS_DIR/firewall-diagram.drawio" ]; then
+    echo "  → firewall-diagram.drawio"
+    drawio -x -f svg --transparent -o "$DIAGRAMS_DIR/firewall-diagram.svg" "$DIAGRAMS_DIR/firewall-diagram.drawio"
+else
+    echo "  ⚠ firewall-diagram.drawio not found, skipping"
 fi
 
 echo "Done! SVG files generated in $DIAGRAMS_DIR"

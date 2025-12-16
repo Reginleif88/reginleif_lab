@@ -19,6 +19,13 @@ For educational context about multi-site Active Directory, Windows host firewall
 
 ---
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing. After VLAN segmentation in Project 11:
+> - P-WIN-DC1: `172.16.0.10` → `172.16.5.10`, gateway `172.16.0.1` → `172.16.5.1`
+> - H-WIN-DC2: `172.17.0.10` → `172.17.5.10`, gateway `172.17.0.1` → `172.17.5.1`
+> - DNS forwarders update from `172.16.0.1`/`172.17.0.1` to `172.16.5.1`/`172.17.5.1`
+> - AD Sites subnets are updated for all VLAN ranges
+
 ## Prerequisites
 
 * Project 7 completed (Site-to-Site VPN working)
@@ -38,6 +45,13 @@ For educational context about multi-site Active Directory, Windows host firewall
 * SMB (TCP 445) for file shares and SYSVOL replication
 * RPC (Dynamic ports) for AD replication
 * LDAP, Kerberos, and other AD protocols
+
+| Protocol | Why AD Needs It |
+|----------|-----------------|
+| **SMB** | Server Message Block (port 445) — replicates SYSVOL (Group Policy files, logon scripts) and NETLOGON share between DCs. Without SMB, GPOs won't update across sites. |
+| **RPC** | Remote Procedure Call (port 135 + dynamic 49152-65535) — AD replication, remote registry, and management tools use RPC to communicate between DCs. |
+| **LDAP** | Lightweight Directory Access Protocol (port 389) — queries and updates the AD database (users, groups, computer objects). |
+| **Kerberos** | Authentication protocol (ports 88, 464) — authenticates users and computers. Cross-site logins fail if Kerberos traffic is blocked. |
 
 This is the **#1 reason** site-to-site VPN labs fail validation tests.
 

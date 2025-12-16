@@ -386,6 +386,8 @@ cscript ospp.vbs /dstatus
 
 KMS clients automatically look for a DNS SRV record to find the KMS host. Creating this record enables automatic activation without manual configuration on each client.
 
+> **Port 1688** is the well-known port for KMS (Key Management Service). When a Windows client with a GVLK attempts activation, it connects to TCP port 1688 on the KMS host. The `_vlmcs._tcp` SRV record tells clients where to find this service (VLMCS = Volume License Management Client Service).
+
 ### A. Create SRV Record
 
 ```powershell

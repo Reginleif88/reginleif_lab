@@ -22,6 +22,12 @@ For educational context about bastion hosts, gateway-based access patterns, and 
 > [!NOTE]
 > **Optional Project:** This project is useful for practicing enterprise remote access patterns such as bastion hosts, gateway-based access, and centralized credential management.
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing (`172.16.0.0/24`). After VLAN segmentation in Project 11:
+> - P-WIN-SRV1 moves to `172.16.20.11` on the Servers VLAN (later `172.16.99.11` on Management VLAN in Project 16)
+> - DNS server changes from `172.16.0.10` to `172.16.5.10`
+> - Gateway changes from `172.16.0.1` to `172.16.20.1`
+
 ## 1. VM Hardware Configuration
 
 *Settings configured in Proxmox:*
