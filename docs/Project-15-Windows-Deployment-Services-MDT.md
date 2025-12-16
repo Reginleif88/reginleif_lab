@@ -26,11 +26,15 @@ This enables consistent, repeatable deployments of Windows 10, Windows 11, and W
 
 | Protocol | Port(s) | Source | Destination | Purpose |
 |:---------|:--------|:-------|:------------|:--------|
-| UDP | 67, 68 | Clients VLAN | 172.16.20.14 | DHCP/PXE discovery |
 | UDP | 69 | Clients VLAN | 172.16.20.14 | TFTP (boot image transfer) |
 | UDP | 4011 | Clients VLAN | 172.16.20.14 | PXE (alternate port) |
 | TCP | 445 | Clients VLAN | 172.16.20.14 | SMB (deployment share access) |
 | TCP | 9800-9801 | Admin Workstation | 172.16.20.14 | MDT Monitoring (optional) |
+
+> **PXE Boot Protocol Details:**
+> - **DHCP (ports 67/68)** — PXE clients use standard DHCP discovery to obtain an IP address. This traffic goes to the **Domain Controllers** (DHCP servers), not to WDS. The DCs include DHCP Options 66/67 to redirect clients to the WDS server.
+> - **TFTP (port 69)** — Trivial File Transfer Protocol. A simple, connectionless protocol used to transfer the initial boot image (NBP - Network Bootstrap Program) to the PXE client. TFTP has no authentication, which is why WDS should only be accessible from trusted VLANs.
+> - **PXE alternate port (4011)** — When WDS runs on a server that's NOT the DHCP server, clients use port 4011 for PXE communication. This avoids conflicts with the DHCP service on port 67.
 
 > [!TIP]
 > For cross-VLAN PXE boot (deploying to VLAN 10 from WDS on VLAN 20), configure DHCP Options 66/67 or IP Helper on OPNsense. See Section 10 for detailed configuration.

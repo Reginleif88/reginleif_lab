@@ -19,6 +19,12 @@ For educational context about Road Warrior VPN configurations, WireGuard client 
 
 ---
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing. After VLAN segmentation in Project 11:
+> - WireGuard DNS changes from `172.16.0.10, 172.17.0.10` to `172.16.5.10, 172.17.5.10`
+> - AllowedIPs change from `/24` subnets to `/16` ranges to cover all VLANs
+> - See Project 11, Section 2.C for the updated Road Warrior configuration
+
 ## 1. Architecture Design
 
 | Role | Device | Physical IP | Tunnel IP |

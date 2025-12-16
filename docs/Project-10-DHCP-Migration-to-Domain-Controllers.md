@@ -39,6 +39,13 @@ For educational context about DHCP, the DORA process, lease lifecycle, and DHCP 
 
 ---
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project configures DHCP for flat network addressing (`172.16.0.0/24` and `172.17.0.0/24`). After VLAN segmentation in Project 11:
+> - These flat network scopes are removed
+> - New VLAN 10 (Clients) scopes are created: `172.16.10.0/24` and `172.17.10.0/24`
+> - DNS servers change from `172.16.0.10`/`172.17.0.10` to `172.16.5.10`/`172.17.5.10`
+> - DHCP relay is configured on OPNsense to forward requests across VLANs
+
 ## 1. Install DHCP Role
 
 ### Prerequisites - Install DHCP Management Tools (P-WIN-SRV1)

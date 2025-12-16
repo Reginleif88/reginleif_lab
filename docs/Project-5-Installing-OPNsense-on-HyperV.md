@@ -19,6 +19,9 @@ For educational context about OPNsense deployment on Hyper-V, Generation 2 VMs, 
 
 ---
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing (`172.17.0.0/24`). IP addresses and network configuration will change when VLAN segmentation is implemented in Project 11. The gateway will move from `172.17.0.1` to VLAN-specific addresses (e.g., `172.17.5.1` for Infrastructure VLAN).
+
 ## 1. VM Hardware Configuration
 
 Configure the Hyper-V virtual machine. Generation 2 VMs provide UEFI boot.

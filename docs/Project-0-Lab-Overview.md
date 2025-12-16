@@ -37,7 +37,7 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 | **Virtualization** | Proxmox VE, Windows Hyper-V |
 | **Firewalls** | OPNsense (FreeBSD) |
 | **Directory Services** | Windows Server 2022, Active Directory, Group Policy |
-| **Networking** | WireGuard VPN, VLANs, NAT, DNS, DHCP |
+| **Networking** | IPsec IKEv2, WireGuard VPN, VLANs, NAT, DNS, DHCP |
 | **Licensing** | KMS (Key Management Service), ADBA (Active Directory Based Activation) |
 | **Automation** | PowerShell, Bash scripting |
 | **Remote Access** | Royal Server, RDP, SSH |
@@ -56,8 +56,8 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 ┌───────────────────────────────┐         ┌───────────────────────────────┐
 │   SITE A: HQ (Proxmox)        │         │   SITE B: BRANCH (Hyper-V)    │
 │   OPNsenseHQ                  │◄═══════►│   OPNsenseBranch              │
-│   WAN: 192.168.1.240          │WireGuard│   WAN: 192.168.1.245          │
-├───────────────────────────────┤  VPN    ├───────────────────────────────┤
+│   WAN: 192.168.1.240          │  IPsec  │   WAN: 192.168.1.245          │
+├───────────────────────────────┤  IKEv2  ├───────────────────────────────┤
 │                               │         │                               │
 │ VLAN 1 (Native) - Unused      │         │ VLAN 1 (Native) - Unused      │
 │   Blackhole (no IPs)          │         │   Blackhole (no IPs)          │
@@ -92,6 +92,7 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 ┌───────────────────────┐
 │ Admin PC              │
 │ 10.200.0.10           │
+│ (VLAN 99 Only)        │
 └───────────────────────┘
 ```
 
@@ -115,7 +116,8 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 |------|------------|--------|--------------|---------|
 | HQ | Proxmox VE | 192.168.1.240 | 172.16.0.0/16 | OPNsenseHQ |
 | Branch | Hyper-V | 192.168.1.245 | 172.17.0.0/16 | OPNsenseBranch |
-| WireGuard Tunnel | — | — | 10.200.0.0/24 | — |
+| IPsec Site-to-Site | — | — | (routed via tunnel) | — |
+| WireGuard Road Warrior | — | — | 10.200.0.0/24 | — |
 
 ### VLAN Architecture
 
@@ -133,6 +135,19 @@ This lab implements a fully functional **multi-site enterprise network** simulat
 - **Static IPs:** x.x.VLAN.2-29
 - **DHCP Pool:** x.x.VLAN.30-254 (Clients VLAN only)
 - **Third octet = VLAN ID** (e.g., VLAN 5 uses .5.x, VLAN 20 uses .20.x)
+
+### Firewall Policy Matrix
+
+Traffic allowed between VLANs (see [Project 18](Project-18-Firewall-Hardening.md) for detailed rules):
+
+| Source ↓ / Dest → | INFRA (DCs) | CLIENTS | SERVERS | MGMT | Internet |
+|:------------------|:-----------:|:-------:|:-------:|:----:|:--------:|
+| **CLIENTS**       | AD Services | -       | KMS,PKI,WDS | ✗ | ✓ |
+| **SERVERS**       | AD Services | -       | -       | -    | ✗ (Zero-Trust) |
+| **MGMT**          | AD Services | RDP,SSH | RDP,SSH | -    | ✓ |
+| **INFRA (DCs)**   | Replication | Response| -       | -    | Updates,DNS |
+| **WireGuard**     | DNS only    | ✗       | ✗       | ✓    | ✗ |
+| **IPsec**         | AD Repl     | ✓       | ✓       | ✓    | - |
 
 ---
 
@@ -199,11 +214,11 @@ Enterprise Services
           /NPS       MDT
 
 Operations
-┌─────┐
-│ P16 │
-└─────┘
-Management
-Network
+┌─────┐   ┌─────┐   ┌─────┐
+│ P16 │──►│ P17 │──►│ P18 │
+└─────┘   └─────┘   └─────┘
+Management IPsec    Firewall
+Network    S2S VPN  Hardening
 ```
 
 ### Project Summary
@@ -225,7 +240,9 @@ Network
 | 13 | [Certificate Services (PKI)](Project-13-Certificate-Services-PKI.md) | Two-tier PKI, Offline Root CA | Planned |
 | 14 | [RADIUS/NPS Authentication](Project-14-RADIUS-NPS-Authentication.md) | NPS, RADIUS, EAP | Planned |
 | 15 | [Windows Deployment Services](Project-15-Windows-Deployment-Services-MDT.md) | WDS, MDT, PXE Boot | Planned |
-| 16 | [Management Network Setup](Project-16-Management-Network-Setup.md) | Bastion Host, VPN Restriction, Monitoring Prep | In Progress |
+| 16 | [Management Network Setup](Project-16-Management-Network-Setup.md) | Bastion Host, VPN Restriction, Monitoring Prep | Planned |
+| 17 | [IPsec Site-to-Site VPN](Project-17-IPsec-Site-to-Site-VPN.md) | IPsec IKEv2, PKI Certificates, strongSwan | Planned |
+| 18 | [Firewall Hardening](Project-18-Firewall-Hardening.md) | Port Aliases, Granular Rules, Protocol Learning | Planned |
 
 ### Learning Paths
 

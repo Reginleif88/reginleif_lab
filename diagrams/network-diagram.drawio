@@ -135,7 +135,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="admin-pc" value="&lt;b&gt;Admin PC&lt;/b&gt;&lt;br&gt;(WireGuard Road Warrior)&lt;br&gt;Tunnel: 10.200.0.10&lt;br&gt;&lt;i&gt;&lt;font color=&quot;#9673a6&quot;&gt;VLAN 99 Only&lt;/font&gt;&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
-          <mxGeometry x="40" y="80" width="120" height="70" as="geometry" />
+          <mxGeometry x="40" y="70" width="120" height="80" as="geometry" />
         </mxCell>
         <mxCell id="vpn-rw-conn" value="WireGuard" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#3700CC;dashed=1;entryX=0.004;entryY=0.463;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#6a00ff;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;fontSize=12;" parent="1" target="opnsense-hq" edge="1">
           <mxGeometry x="-0.0006" relative="1" as="geometry">

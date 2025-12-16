@@ -1,0 +1,232 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.0.3 Chrome/140.0.7339.249 Electron/38.7.0 Safari/537.36" version="29.0.3">
+  <diagram name="Firewall Policy" id="firewall-policy">
+    <mxGraphModel dx="1412" dy="875" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="wg-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=2;opacity=40;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="60" y="480" width="430" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="title" value="&lt;b&gt;REGINLEIF.IO Firewall Policy&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="500" width="400" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="OPNsense Ingress Filtering Model (Project 18)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#666666;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="500" y="40" width="400" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="ig-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;strokeWidth=2;opacity=50;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="40" y="80" width="400" height="340" as="geometry" />
+        </mxCell>
+        <mxCell id="ig-title" value="&lt;b&gt;INTERFACE GROUP: IG_UserVLANs&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#333333;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="100" y="83" width="280" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="ig-desc" value="&lt;i&gt;DRY Principle: Write AD rules once, apply to all VLANs&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="100" y="113" width="290" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ig-members-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;opacity=40;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="60" y="143" width="380" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="vlan-clients" value="&lt;b&gt;CLIENTS&lt;/b&gt;&lt;br&gt;172.16.10.0/24&lt;br&gt;172.17.10.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="70" y="153" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vlan-servers" value="&lt;b&gt;SERVERS&lt;/b&gt;&lt;br&gt;172.16.20.0/24&lt;br&gt;172.17.20.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="195" y="153" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vlan-mgmt" value="&lt;b&gt;MGMT&lt;/b&gt;&lt;br&gt;172.16.99.0/24&lt;br&gt;172.17.99.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="320" y="153" width="110" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ig-arrow" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#82b366;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="240" y="223" as="sourcePoint" />
+            <mxPoint x="240" y="278" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ig-arrow-label" value="&lt;font color=&quot;#82b366&quot;&gt;&lt;b&gt;11 Common AD Rules&lt;/b&gt;&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="250" y="226" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dcs-all" value="&lt;b&gt;DCs_All&lt;/b&gt;&lt;br&gt;&lt;hr&gt;P-WIN-DC1: 172.16.5.10&lt;br&gt;H-WIN-DC2: 172.17.5.10&lt;br&gt;&lt;br&gt;&lt;b&gt;Services:&lt;/b&gt;&lt;br&gt;&lt;table cellpadding=&quot;2&quot; cellspacing=&quot;0&quot;&gt;&lt;tr&gt;&lt;td&gt;DNS (53)&lt;/td&gt;&lt;td&gt;SMB (445)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;Kerberos (88, 464)&lt;/td&gt;&lt;td&gt;RPC (135, 49152-65535)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;LDAP (389, 636)&lt;/td&gt;&lt;td&gt;NTP (123)&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;ADWS (9389)&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="110" y="246" width="290" height="164" as="geometry" />
+        </mxCell>
+        <mxCell id="rules-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;strokeWidth=2;opacity=50;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="460" y="80" width="540" height="350" as="geometry" />
+        </mxCell>
+        <mxCell id="rules-title" value="&lt;b&gt;PER-INTERFACE RULES&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#333333;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="610" y="88" width="200" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="rules-desc" value="&lt;i&gt;Additional rules beyond AD services (per source interface)&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="560" y="116" width="350" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="clients-rules" value="&lt;b&gt;CLIENTS Interface&lt;/b&gt;&lt;br&gt;&lt;hr&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → KMS (1688)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → PKI (80, 443, RPC)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → WDS (TFTP 69)&lt;br&gt;&lt;font color=&quot;#cc0000&quot;&gt;✗&lt;/font&gt; → MGMT (blocked)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → Internet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="480" y="155" width="155" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="servers-rules" value="&lt;b&gt;SERVERS Interface&lt;/b&gt;&lt;br&gt;&lt;hr&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; DHCP Relay&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; ICMP Internal&lt;br&gt;&lt;br&gt;&lt;font color=&quot;#cc0000&quot;&gt;&lt;b&gt;✗ BLOCKED: Internet&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;i&gt;Zero-Trust Policy&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="650" y="155" width="155" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="mgmt-rules" value="&lt;b&gt;MGMT Interface&lt;/b&gt;&lt;br&gt;&lt;hr&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → All: RDP (3389)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → All: SSH (22)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → All: WinRM (5985)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → Internet&lt;br&gt;&lt;i&gt;Admin Access&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="820" y="155" width="155" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="infra-rules" value="&lt;b&gt;INFRA Interface&lt;/b&gt;&lt;br&gt;&lt;hr&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; DHCP Relay&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; DC → Internal (Response)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → GW: DNS (Forwarding)&lt;br&gt;&lt;font color=&quot;#006600&quot;&gt;✓&lt;/font&gt; → Internet: HTTP/S, NTP&lt;br&gt;&lt;i&gt;DC-originated traffic&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;align=left;spacingLeft=10;" parent="1" vertex="1">
+          <mxGeometry x="480" y="290" width="175" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="internet" value="&lt;b&gt;Internet&lt;/b&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="800" y="290" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zt-arrow" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#b85450;entryX=0.192;entryY=0.25;entryDx=0;entryDy=0;dashed=1;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;entryPerimeter=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="806" y="232" as="sourcePoint" />
+            <mxPoint x="824.0400000000002" y="312" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="zt-label" value="&lt;font color=&quot;#b85450&quot;&gt;&lt;b&gt;✗ BLOCKED&lt;/b&gt;&lt;br&gt;Zero-Trust&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="700" y="285" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="vpn-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;strokeWidth=2;opacity=50;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="40" y="440" width="920" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="vpn-title" value="&lt;b&gt;VPN INTERFACE RULES&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontColor=#333333;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="400" y="448" width="200" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="wg-title" value="&lt;b&gt;WireGuard Interface (Road Warriors)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#996600;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="150" y="485" width="250" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="wg-peer" value="&lt;b&gt;Road Warrior&lt;/b&gt;&lt;br&gt;10.200.0.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="80" y="515" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="royal-server" value="&lt;b&gt;Royal Server&lt;/b&gt;&lt;br&gt;172.16.99.11&lt;br&gt;Port 54899" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="270" y="515" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="wg-arrow" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#82b366;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" source="wg-peer" target="royal-server" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="600" y="530" as="sourcePoint" />
+            <mxPoint x="650" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wg-arrow-label" value="&lt;font color=&quot;#82b366&quot;&gt;&lt;b&gt;✓ MGMT Only&lt;/b&gt;&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="175" y="515" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="wg-block" value="&lt;font color=&quot;#b85450&quot;&gt;&lt;b&gt;✗ Direct Access Blocked&lt;/b&gt;&lt;br&gt;CLIENTS, SERVERS, DCs&lt;/font&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="370" y="527.5" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="bastion-note" value="&lt;i&gt;Bastion Host Model: Access internal resources via Royal Server proxy&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="80" y="574" width="390" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ipsec-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;opacity=40;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="500" y="480" width="450" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ipsec-title" value="&lt;b&gt;IPsec Interface (Site-to-Site)&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#7a4988;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="620" y="485" width="200" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="dc-hq" value="&lt;b&gt;P-WIN-DC1&lt;/b&gt;&lt;br&gt;HQ&lt;br&gt;172.16.5.10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="520" y="515" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="ipsec-tunnel" value="&lt;b&gt;IPsec IKEv2&lt;/b&gt;&lt;br&gt;UDP 500/4500&lt;br&gt;ESP" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="680" y="515" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="dc-branch" value="&lt;b&gt;H-WIN-DC2&lt;/b&gt;&lt;br&gt;Branch&lt;br&gt;172.17.5.10" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="840" y="515" width="100" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="ipsec-arrow1" value="" style="endArrow=classic;startArrow=classic;html=1;strokeWidth=2;strokeColor=#9673a6;dashed=1;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" source="dc-hq" target="ipsec-tunnel" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="600" y="530" as="sourcePoint" />
+            <mxPoint x="650" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ipsec-arrow2" value="" style="endArrow=classic;startArrow=classic;html=1;strokeWidth=2;strokeColor=#9673a6;dashed=1;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" source="ipsec-tunnel" target="dc-branch" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="600" y="530" as="sourcePoint" />
+            <mxPoint x="650" y="480" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ipsec-note" value="&lt;i&gt;AD Replication + Inter-site traffic (pre-filtered at source interface)&lt;/i&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#666666;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="540" y="574" width="360" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=1;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1020" y="100" width="220" height="290" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="&lt;b&gt;LEGEND&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1080" y="116" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-allowed" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="143" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-allowed-text" value="Allowed Traffic" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="143" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-blocked" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="168" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-blocked-text" value="Blocked / Zero-Trust" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="168" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-infra" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="193" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-infra-text" value="Infrastructure (DCs)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="193" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-servers" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="218" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-servers-text" value="Member Servers" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="218" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-mgmt" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="243" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-mgmt-text" value="Management / VPN" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="243" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-rw" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="268" width="20" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-rw-text" value="Road Warrior" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="268" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-allow-line" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#82b366;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1050" y="303" as="sourcePoint" />
+            <mxPoint x="1070" y="303" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-allow-line-text" value="Allowed Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="293" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-block-line" value="" style="endArrow=classic;html=1;strokeWidth=2;strokeColor=#b85450;dashed=1;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1050" y="328" as="sourcePoint" />
+            <mxPoint x="1070" y="328" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-block-line-text" value="Blocked Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="318" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-vpn-line-text" value="VPN Tunnel" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1075" y="343" width="140" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="concepts-container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=1;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1020" y="405" width="220" height="270" as="geometry" />
+        </mxCell>
+        <mxCell id="concepts-title" value="&lt;b&gt;KEY CONCEPTS&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="1050" y="416" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="concepts-content" value="&lt;b&gt;Ingress Filtering:&lt;/b&gt;&lt;br&gt;Rules on SOURCE interface&lt;br&gt;(where traffic enters)&lt;br&gt;&lt;br&gt;&lt;b&gt;Interface Groups:&lt;/b&gt;&lt;br&gt;Write rules once (DRY)&lt;br&gt;Apply to multiple interfaces&lt;br&gt;&lt;br&gt;&lt;b&gt;Zero-Trust:&lt;/b&gt;&lt;br&gt;Servers blocked from internet&lt;br&gt;Prevents C2, exfiltration&lt;br&gt;&lt;br&gt;&lt;b&gt;Bastion Model:&lt;/b&gt;&lt;br&gt;Road warriors → Royal Server&lt;br&gt;No direct VLAN access" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;spacingLeft=5;" parent="1" vertex="1">
+          <mxGeometry x="1043" y="438" width="194" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="summary-box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e6ffcc;strokeColor=#82b366;strokeWidth=1;opacity=60;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="40" y="640" width="940" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="summary-title" value="&lt;b&gt;RULE COUNT SUMMARY&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="60" y="645" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="summary-content" value="IG_UserVLANs: &lt;b&gt;11 rules&lt;/b&gt; (AD Services) | CLIENTS: &lt;b&gt;7 rules&lt;/b&gt; | SERVERS: &lt;b&gt;3 rules&lt;/b&gt; (Zero-Trust) | MGMT: &lt;b&gt;6 rules&lt;/b&gt; | INFRA: &lt;b&gt;7 rules&lt;/b&gt; | WireGuard: &lt;b&gt;4 rules&lt;/b&gt; | IPsec: &lt;b&gt;2 rules&lt;/b&gt; | WAN: &lt;b&gt;4 rules&lt;/b&gt; | &lt;b&gt;Total: ~44 rules&lt;/b&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontFamily=Atkinson Hyperlegible Next;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DAtkinson%2BHyperlegible%2BNext;" parent="1" vertex="1">
+          <mxGeometry x="60" y="665" width="880" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="AvT8ibju33LqvEoJRnfh-3" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1048" y="353.71" as="sourcePoint" />
+            <mxPoint x="1073" y="353.71" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

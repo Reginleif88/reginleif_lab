@@ -46,8 +46,8 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 ┌───────────────────────────────┐         ┌───────────────────────────────┐
 │   SITE A: HQ (Proxmox)        │         │   SITE B: BRANCH (Hyper-V)    │
 │   OPNsenseHQ                  │◄═══════►│   OPNsenseBranch              │
-│   WAN: 192.168.1.240          │WireGuard│   WAN: 192.168.1.245          │
-├───────────────────────────────┤  VPN    ├───────────────────────────────┤
+│   WAN: 192.168.1.240          │  IPsec  │   WAN: 192.168.1.245          │
+├───────────────────────────────┤  IKEv2  ├───────────────────────────────┤
 │                               │         │                               │
 │ VLAN 1 (Native) - Unused      │         │ VLAN 1 (Native) - Unused      │
 │   Blackhole (no IPs)          │         │   Blackhole (no IPs)          │
@@ -95,7 +95,7 @@ The goal is to mirror real corporate infrastructure patterns and not just "spin 
 | **Virtualization** | Proxmox VE, Windows Hyper-V |
 | **Firewalls** | OPNsense (FreeBSD) |
 | **Directory Services** | Windows Server 2022, Active Directory, Group Policy |
-| **Networking** | WireGuard VPN, VLANs, NAT, DNS, DHCP |
+| **Networking** | IPsec IKEv2, WireGuard VPN, VLANs, NAT, DNS, DHCP |
 | **Licensing** | KMS (Key Management Service), ADBA (Active Directory Based Activation) |
 | **Automation** | PowerShell, Bash scripting |
 | **Remote Access** | Royal Server, RDP, SSH |
@@ -125,6 +125,8 @@ Each component is documented as a standalone project with step-by-step instructi
 | 14 | [RADIUS/NPS Authentication](docs/Project-14-RADIUS-NPS-Authentication.md) | Centralized firewall authentication via AD |
 | 15 | [Windows Deployment Services + MDT](docs/Project-15-Windows-Deployment-Services-MDT.md) | Lite-touch OS deployment infrastructure |
 | 16 | [Management Network Setup](docs/Project-16-Management-Network-Setup.md) | Bastion host architecture, restricted VPN access |
+| 17 | [IPsec Site-to-Site VPN](docs/Project-17-IPsec-Site-to-Site-VPN.md) | Enterprise VPN with PKI certificate authentication |
+| 18 | [Firewall Hardening](docs/Project-18-Firewall-Hardening.md) | Granular port-based firewall rules replacing permissive policies |
 
 ---
 

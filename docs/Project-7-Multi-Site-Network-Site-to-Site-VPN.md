@@ -19,6 +19,12 @@ For educational context about VPNs, WireGuard, NAT traversal, and cryptokey rout
 
 ---
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing (`172.16.0.0/24` for HQ, `172.17.0.0/24` for Branch). After VLAN segmentation in Project 11:
+> - HQ gateway moves from `172.16.0.1` to VLAN-specific addresses (e.g., `172.16.5.1`)
+> - Branch gateway moves from `172.17.0.1` to VLAN-specific addresses (e.g., `172.17.5.1`)
+> - The `Trusted_Lab_Networks` alias is updated to include all VLAN subnets
+
 ## 1. Architecture Design
 
 ### Topology Overview
@@ -70,6 +76,9 @@ Before configuring WireGuard, create an alias to represent all trusted lab netwo
 4. **Click Apply**
 
 > **Why use an alias?** In enterprise environments, firewall rules reference aliases (or "address groups") rather than hardcoded subnets. This makes rules easier to audit, update, and maintain. When you add a new site or VPN subnet, you update the alias once rather than modifying multiple rules.
+
+> [!NOTE]
+> **Permissive Firewall Rules:** This project uses broad "allow any" rules between trusted networks for simplicity during initial setup. These permissive rules will be replaced with granular, service-specific port rules in **Project 18: Firewall Hardening**.
 
 ---
 
@@ -431,6 +440,14 @@ After both sides are configured, verify connectivity:
 
 > [!NOTE]
 > The WireGuard interface rule permits all inter-site traffic including AD replication (LDAP, Kerberos, RPC), file sharing (SMB), DNS queries, and road warrior VPN access. The alias ensures traffic from any trusted network can reach any other trusted network.
+>
+> **Protocol Reference:**
+> | Protocol | Port(s) | Purpose |
+> |----------|---------|---------|
+> | **LDAP** | 389 | Lightweight Directory Access Protocol — queries AD for users, groups, and other directory objects |
+> | **Kerberos** | 88, 464 | Authentication protocol — provides secure identity verification using tickets instead of passwords over the network |
+> | **RPC** | 135 + dynamic | Remote Procedure Call — enables AD replication, Group Policy, and remote management between DCs |
+> | **SMB** | 445 | Server Message Block — file sharing for SYSVOL, NETLOGON, and GPO distribution |
 
 ---
 

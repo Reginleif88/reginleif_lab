@@ -19,6 +19,9 @@ For educational context about Domain Controller requirements, static memory allo
 
 ---
 
+> [!NOTE]
+> **Pre-VLAN Addressing:** This project uses flat network addressing (`172.17.0.0/24`). After VLAN segmentation in Project 11, H-WIN-DC2 moves to `172.17.5.10` on the Infrastructure VLAN, and the gateway changes from `172.17.0.1` to `172.17.5.1`.
+
 ## 1. VM Hardware Configuration
 
 Configure the Hyper-V VM for the Branch domain controller.

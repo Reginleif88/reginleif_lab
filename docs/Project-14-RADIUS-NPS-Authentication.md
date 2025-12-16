@@ -39,6 +39,10 @@ For educational context about RADIUS protocol, AAA framework, authentication met
 | TCP/UDP | 389 | 172.16.20.14 | Domain Controllers | LDAP (AD authentication) |
 | TCP | 636 | 172.16.20.14 | Domain Controllers | LDAPS (secure LDAP) |
 
+> **LDAP vs LDAPS:**
+> - **LDAP (port 389)** — Lightweight Directory Access Protocol. NPS queries Active Directory via LDAP to verify user credentials, check group membership, and retrieve account policies. Traffic is unencrypted by default.
+> - **LDAPS (port 636)** — LDAP over SSL/TLS. Same functionality as LDAP but encrypted. Requires a certificate on the Domain Controllers (configured via PKI in Project 13). Use LDAPS when NPS traffic crosses untrusted networks.
+
 > [!NOTE]
 > The source IPs (172.16.5.1 and 172.17.5.1) are the OPNsense firewalls' Infrastructure VLAN interfaces, as these are the RADIUS clients sending authentication requests to NPS.
 
