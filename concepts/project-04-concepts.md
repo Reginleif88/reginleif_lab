@@ -227,3 +227,16 @@ If Royal Server doesn't fit your needs:
 - Gateway pattern is common in enterprise environments
 - Optional project - demonstrates advanced remote access concepts
 
+---
+
+## Key Terms Glossary
+
+| Term | Definition |
+|:-----|:-----------|
+| **Royal TS** | Desktop client for managing remote connections (RDP, SSH, VNC, and more) |
+| **Royal Server** | Windows service acting as secure gateway and management endpoint |
+| **Bastion host** | Hardened server providing controlled, audited access to internal resources |
+| **Gateway** | Intermediary server that tunnels connections to internal targets |
+| **Jump server** | Server used as stepping stone to access other systems (manual RDP-to-RDP) |
+| **Service account** | Domain account running Windows services with specific, limited permissions |
+| **Zero Trust** | Security model requiring identity verification for every access request, regardless of network location |

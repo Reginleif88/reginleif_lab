@@ -311,4 +311,3 @@ Second query (from any lab VM):
 | **Unbound** | Recursive, caching DNS resolver | OPNsense's DNS service |
 | **DNSSEC** | DNS Security Extensions that cryptographically validate DNS responses | Enabled in Unbound to prevent DNS spoofing |
 | **Recursive Resolution** | DNS server queries root/TLD/authoritative servers on behalf of clients | Unbound does full recursion (not just forwarding) |
-

@@ -1009,7 +1009,50 @@ nslookup microsoft.com
 
 ---
 
-## 8. AD Sites and Subnets
+## 8. Update NTP Configuration
+
+After migrating to VLANs, the NTP configuration from Project 8 points to the old flat network gateway. Update DC1 to sync from the new Infrastructure VLAN gateway.
+
+### Why This Matters
+
+In the enterprise NTP pattern (Project 8), DC1 (PDC Emulator) syncs time from OPNsense rather than directly from internet NTP pools. After VLAN migration, the OPNsense interface IP changes:
+
+- **Old (flat network):** `172.16.0.1`
+- **New (VLAN 5):** `172.16.5.1`
+
+### Update DC1 NTP Source
+
+```powershell
+# [P-WIN-DC1]
+# Update NTP to use new Infrastructure VLAN gateway
+w32tm /config /manualpeerlist:"172.16.5.1" /syncfromflags:manual /reliable:yes /update
+
+# Restart Windows Time service
+Restart-Service w32time
+
+# Force sync
+w32tm /resync /rediscover
+
+# Verify configuration
+w32tm /query /status
+```
+
+**Expected output:**
+
+```text
+Source: 172.16.5.1
+Stratum: 3 or 4
+```
+
+> [!NOTE]
+> **DC2 does not need updating.** DC2 uses `DOMHIER` (domain hierarchy) to sync from the PDC Emulator (DC1), not directly from OPNsense. As long as DC1 has correct time, DC2 will sync automatically.
+
+> [!TIP]
+> **General rule for VLAN environments:** The NTP server IP should always be the **DC's default gateway**. This ensures NTP works regardless of which VLAN the DC is on.
+
+---
+
+## 9. AD Sites and Subnets
 
 Register the new VLAN subnets in Active Directory Sites and Services so clients authenticate against the correct DC. Update the old Infrastructure subnet to the new VLAN 5 subnet.
 
@@ -1037,7 +1080,7 @@ Get-ADReplicationSubnet -Filter * | Format-Table Name, Site
 
 ---
 
-## 9. Windows Firewall Notes
+## 10. Windows Firewall Notes
 
 > [!NOTE]
 > Windows Firewall updates are performed inline during each VM migration to ensure connectivity before AD replication:
@@ -1054,7 +1097,7 @@ Get-ADReplicationSubnet -Filter * | Format-Table Name, Site
 
 ---
 
-## 10. Configure DHCP Relay
+## 11. Configure DHCP Relay
 
 > [!IMPORTANT]
 > **DHCP relay is REQUIRED for clients to receive IP addresses.**
@@ -1143,7 +1186,7 @@ VLAN 10 (Clients)          OPNsense (Relay)        VLAN 5 (Infrastructure)
 
 ---
 
-## 11. Validation
+## 12. Validation
 
 ### A. OPNsense Verification
 
@@ -1168,6 +1211,7 @@ VLAN 10 (Clients)          OPNsense (Relay)        VLAN 5 (Infrastructure)
 - [ ] Test VM can resolve DNS (nslookup reginleif.io)
 - [ ] DCs can resolve external domains (nslookup google.com)
 - [ ] DNS forwarders updated to new VLAN gateways (172.16.5.1, 172.17.5.1)
+- [ ] NTP source updated on DC1 (`w32tm /query /source` shows 172.16.5.1)
 - [ ] Cross-site: HQ VLAN 10 can ping Branch DC (172.17.5.10)
 - [ ] Road Warrior can reach new VLANs
 - [ ] AD subnets registered in Sites and Services

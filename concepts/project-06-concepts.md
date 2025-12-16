@@ -298,3 +298,17 @@ If two admins edit the same object on different DCs simultaneously:
 6. **NTDS.dit + SYSVOL**: Two replication streams - database changes and Group Policy files
 7. **Temporary DNS**: Point to gateway initially, switch to HQ DC after VPN is ready
 
+---
+
+## Key Terms Glossary
+
+| Term | Definition |
+|:-----|:-----------|
+| **Dynamic Memory** | Hyper-V feature allowing VMs to share RAM pool; dangerous for Domain Controllers |
+| **Static Memory** | Fixed RAM allocation for a VM; required for Domain Controllers |
+| **Memory ballooning** | Hypervisor reclaiming memory from a VM during host memory pressure |
+| **NTDS.dit** | Active Directory database file (`C:\Windows\NTDS\ntds.dit`) storing all AD objects |
+| **SYSVOL** | Replicated share containing Group Policy files and logon scripts |
+| **Multi-master replication** | AD model where all Domain Controllers can accept writes |
+| **USN** | Update Sequence Number: monotonic counter tracking AD changes for replication |
+| **DFS-R** | Distributed File System Replication: mechanism for SYSVOL sync between DCs |

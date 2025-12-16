@@ -399,4 +399,3 @@ If both sites used 172.16.0.0/24, routing would be impossible. Which 172.16.0.10
 | **Unbound** | Recursive DNS resolver included with OPNsense |
 | **DNSSEC** | DNS Security Extensions; cryptographic validation of DNS responses |
 | **Dynamic Memory** | Hyper-V feature to adjust VM memory on-the-fly; should be disabled for firewalls |
-

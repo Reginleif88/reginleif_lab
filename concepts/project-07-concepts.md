@@ -167,4 +167,3 @@ This is called **cryptokey routing**: the public key (which identifies the peer)
 | **Cryptokey Routing** | WireGuard's association of public keys with IP ranges |
 | **Hub-and-Spoke** | Topology where all sites connect to a central hub |
 | **Site-to-Site** | VPN connecting two entire networks |
-

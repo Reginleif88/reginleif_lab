@@ -265,4 +265,3 @@ Group Policy Objects (GPOs) are collections of settings that control the working
 | **GC** | Global Catalog: forest-wide partial replica for searches |
 | **LDAP** | Lightweight Directory Access Protocol: industry-standard protocol for querying directories |
 | **Kerberos** | Ticket-based authentication protocol; replaces NTLM in AD environments |
-

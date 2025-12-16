@@ -195,32 +195,64 @@
       ]
     }
   },
-  "tunnel": {
-    "name": "WireGuard VPN",
-    "description": "Site-to-Site VPN carrying AD replication, DNS, and inter-site traffic",
-    "protocol": "WireGuard",
-    "port": 51820,
-    "keepalive": 25,
-    "subnet": "10.200.0.0/24",
-    "endpoints": {
-      "hq": {
-        "wan": "192.168.1.240",
-        "tunnel": "10.200.0.1"
+  "tunnels": {
+    "site_to_site": {
+      "name": "IPsec Site-to-Site VPN",
+      "description": "IKEv2 VPN with PKI certificate authentication for inter-site traffic (Project 17)",
+      "protocol": "IPsec IKEv2",
+      "authentication": "Mutual RSA (PKI certificates)",
+      "ports": {
+        "ike": 500,
+        "nat_t": 4500,
+        "esp": "protocol 50"
       },
-      "branch": {
-        "wan": "192.168.1.245",
-        "tunnel": "10.200.0.2"
+      "crypto": {
+        "phase1": {
+          "encryption": "AES-256-GCM",
+          "hash": "SHA512",
+          "dh_group": 21,
+          "lifetime": 28800
+        },
+        "phase2": {
+          "encryption": "AES-256-GCM",
+          "pfs_group": 21,
+          "lifetime": 3600
+        }
+      },
+      "endpoints": {
+        "hq": {
+          "wan": "192.168.1.240",
+          "certificate_cn": "ipsec.hq.reginleif.io"
+        },
+        "branch": {
+          "wan": "192.168.1.245",
+          "certificate_cn": "ipsec.branch.reginleif.io"
+        }
+      },
+      "routes": {
+        "hq_to_branch": ["172.17.5.0/24", "172.17.10.0/24", "172.17.20.0/24", "172.17.99.0/24"],
+        "branch_to_hq": ["172.16.5.0/24", "172.16.10.0/24", "172.16.20.0/24", "172.16.99.0/24"]
       }
     },
-    "routes": {
-      "hq_to_branch": ["172.17.5.0/24", "172.17.10.0/24", "172.17.20.0/24", "172.17.99.0/24"],
-      "branch_to_hq": ["172.16.5.0/24", "172.16.10.0/24", "172.16.20.0/24", "172.16.99.0/24"]
-    },
-    "peer_routes": {
-      "peers_to_hq": "172.16.99.0/24",
-      "peers_to_branch": "172.17.99.0/24",
-      "peers_to_tunnel": "10.200.0.0/24",
-      "_comment": "Road Warriors restricted to Management VLANs only (Project 16). All other access via Royal Server gateway."
+    "road_warrior": {
+      "name": "WireGuard Road Warrior VPN",
+      "description": "Remote access VPN for administrators (Project 9)",
+      "protocol": "WireGuard",
+      "port": 51820,
+      "keepalive": 25,
+      "subnet": "10.200.0.0/24",
+      "endpoints": {
+        "hq": {
+          "wan": "192.168.1.240",
+          "tunnel": "10.200.0.1"
+        }
+      },
+      "peer_routes": {
+        "peers_to_hq": "172.16.99.0/24",
+        "peers_to_branch": "172.17.99.0/24",
+        "peers_to_tunnel": "10.200.0.0/24",
+        "_comment": "Road Warriors restricted to Management VLANs only (Project 16). All other access via Royal Server gateway."
+      }
     }
   },
   "trusted_networks": [
