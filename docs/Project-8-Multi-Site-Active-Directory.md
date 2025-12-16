@@ -237,28 +237,45 @@ Kerberos authentication, the backbone of Active Directory security, uses timesta
 
 **This must be configured before promoting DC2**, otherwise the promotion may fail due to time skew between the servers.
 
-**Active Directory Time Hierarchy:**
+**Active Directory Time Hierarchy (Enterprise Pattern):**
 
 ```text
-External NTP (pool.ntp.org)
+   External NTP (pool.ntp.org)
         ↓
-   PDC Emulator (DC1) ─── Authoritative time source for domain
+   OPNsense (172.16.0.1) ── Internal NTP server
         ↓
-   Other DCs (DC2) ─────── Sync from PDC Emulator
+   PDC Emulator (DC1) ───── Authoritative time source for domain
         ↓
-   Domain Members ──────── Sync from authenticating DC
+   Other DCs (DC2) ──────── Sync from PDC Emulator
+        ↓
+   Domain Members ───────── Sync from authenticating DC
 ```
 
-The **PDC Emulator** (by default, the first DC in the forest - `P-WIN-DC1`) is the authoritative time source. It must sync to a reliable external source. All other DCs and domain members automatically sync through the AD hierarchy once joined.
+The **PDC Emulator** (by default, the first DC in the forest - `P-WIN-DC1`) is the authoritative time source for the domain. In enterprise environments, it syncs from an **internal NTP server** (OPNsense) rather than directly to the internet. This follows the security principle that Domain Controllers should not communicate directly with external networks.
 
-### Configure DC1 (PDC Emulator) for External NTP
+> [!NOTE]
+> **Why OPNsense as Internal NTP?** Enterprise environments use internal NTP servers for security (DCs don't talk to internet), compliance (auditable time sources), and reliability (no internet dependency). Using your firewall/router as the internal NTP source mirrors what large organizations do with dedicated NTP appliances.
+
+### Configure OPNsense as NTP Server
+
+Before configuring DC1, ensure OPNsense is serving NTP to the LAN:
+
+1. **OPNsense Web UI:** Services → Network Time → General
+2. **Enable:** Check "Enable" checkbox
+3. **Interfaces:** Select LAN (and any other internal interfaces)
+4. **Time Servers:** Default NTP pools are pre-configured (0.opnsense.pool.ntp.org, etc.)
+5. **Save** and **Apply**
+
+OPNsense will now sync to external NTP pools and serve time to internal clients on `172.16.0.1`.
+
+### Configure DC1 (PDC Emulator) for Internal NTP
 
 **On DC1 (`P-WIN-DC1`):**
 
 ```powershell
 # [P-WIN-DC1]
-# Configure external NTP servers (pool.ntp.org recommended)
-w32tm /config /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org" /syncfromflags:manual /reliable:yes /update
+# Configure OPNsense as NTP server (internal time source)
+w32tm /config /manualpeerlist:"172.16.0.1" /syncfromflags:manual /reliable:yes /update
 
 # Restart the Windows Time service
 Restart-Service w32time
@@ -274,12 +291,18 @@ w32tm /query /status
 **Expected output from `/query/status`:**
 
 ```text
-Source: 0.pool.ntp.org (or similar)
-Stratum: 2 or 3
+Source: 172.16.0.1
+Stratum: 3 or 4
 ```
 
 > [!NOTE]
-> **What is Stratum?** NTP uses a hierarchy called "stratum" to indicate distance from an authoritative time source. Stratum 0 is an atomic clock, Stratum 1 is directly connected to it, Stratum 2 syncs from Stratum 1, etc. Your DC will typically be Stratum 2-4, which is normal.
+> **What is Stratum?** NTP uses a hierarchy called "stratum" to indicate distance from an authoritative time source. Stratum 0 is an atomic clock, Stratum 1 is directly connected to it, Stratum 2 syncs from Stratum 1, etc. With OPNsense as an intermediate layer, your DC will typically be Stratum 3-4, which is normal and well within acceptable range (problems only start at Stratum 10+).
+
+> [!TIP]
+> **VLAN Environments (Project 11+):** If your DCs are on segmented VLANs, use the **DC's default gateway IP** instead of `172.16.0.1`. Each VLAN has its own OPNsense interface that serves NTP. For example, if DC1 is on VLAN 5 with gateway `172.16.5.1`, use that IP for NTP:
+> ```powershell
+> w32tm /config /manualpeerlist:"172.16.5.1" /syncfromflags:manual /reliable:yes /update
+> ```
 
 ---
 
@@ -553,7 +576,7 @@ P-WIN-DC1.reginleif.io
 | **DNS 1** | `172.17.0.10` (Partner DC) | `172.16.0.10` (Partner DC) |
 | **DNS 2** | `172.16.0.10` (Self) | `172.17.0.10` (Self) |
 | **DNS Forwarder** | `172.16.0.1` (OPNsense HQ) | `172.17.0.1` (OPNsense Branch) |
-| **NTP Source** | `pool.ntp.org` (External) | `P-WIN-DC1` (Domain Hierarchy) |
+| **NTP Source** | `172.16.0.1` (OPNsense) | `P-WIN-DC1` (Domain Hierarchy) |
 
 ### Validation Checklist
 

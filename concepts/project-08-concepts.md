@@ -163,7 +163,7 @@ Every change in Active Directory is tracked by a **USN**:
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│  USN-Based Replication                                   │
+│  USN-Based Replication                                  │
 └─────────────────────────────────────────────────────────┘
 
 DC1 makes change → USN increments:
@@ -275,33 +275,57 @@ Kerberos allows maximum **5-minute clock skew** between client and server. Beyon
 - ❌ GPO application fails
 - ❌ Remote management fails (RDP, WinRM)
 
-### AD Time Hierarchy
+### AD Time Hierarchy (Enterprise Pattern)
 
-Active Directory establishes a **time synchronization hierarchy**:
+Active Directory establishes a **time synchronization hierarchy**. In enterprise environments, Domain Controllers sync from an **internal NTP server** rather than directly to the internet:
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│  AD Time Hierarchy                                       │
+│  AD Time Hierarchy (Enterprise)                         │
 └─────────────────────────────────────────────────────────┘
 
-External NTP (0.pool.ntp.org)  ← Stratum 1 (GPS/atomic)
+External NTP (pool.ntp.org)     ← Stratum 1-2 (GPS/atomic)
         ↓
-   PDC Emulator (DC1)           ← Stratum 2 (domain root)
-   └─► Syncs to external NTP
+   OPNsense (172.16.0.1)        ← Stratum 2-3 (internal NTP)
+   └─► Syncs to external NTP pools
+   └─► Serves time to internal network
+        ↓
+   PDC Emulator (DC1)           ← Stratum 3-4 (domain root)
+   └─► Syncs from OPNsense
    └─► Authoritative for domain
         ↓
-   Other DCs (DC2, DC3...)      ← Stratum 3
+   Other DCs (DC2, DC3...)      ← Stratum 4-5
    └─► Sync from PDC Emulator
         ↓
-   Domain Members (workstations, servers)  ← Stratum 4
+   Domain Members (workstations, servers)  ← Stratum 5-6
    └─► Sync from authenticating DC
 ```
+
+### Why Use Internal NTP (Enterprise Pattern)
+
+In production environments, DCs should **not** sync directly to internet NTP pools:
+
+| Concern | Enterprise Approach |
+|:--------|:--------------------|
+| **Security** | DCs shouldn't communicate directly with the internet |
+| **Compliance** | Auditors want controlled, documented time sources |
+| **Reliability** | Internal NTP = no external dependency |
+| **Consistency** | All systems use the same internal source |
+| **Monitoring** | Easier to track and alert on internal NTP servers |
+
+**Common internal NTP sources:**
+
+- **Firewall/router** (OPNsense, Palo Alto, Cisco) - our approach
+- **Dedicated NTP appliances** (Meinberg, Spectracom) - enterprise datacenters
+- **GPS receivers** - finance, healthcare, government (highest accuracy)
+- **Core switches** - large network infrastructures
 
 **Key roles:**
 
 | Role | Configuration | Purpose |
 |:-----|:--------------|:--------|
-| **PDC Emulator** | `w32tm /config /syncfromflags:manual` | Syncs to external NTP (pool.ntp.org) |
+| **OPNsense** | Services → Network Time → General | Internal NTP server, syncs to external pools |
+| **PDC Emulator** | `w32tm /config /manualpeerlist:"172.16.0.1"` | Syncs from OPNsense |
 | **Other DCs** | `w32tm /config /syncfromflags:DOMHIER` | Sync from PDC Emulator via AD |
 | **Domain Members** | Automatic (NT5DS provider) | Sync from authenticating DC |
 
@@ -312,12 +336,13 @@ NTP uses **stratum** to indicate distance from authoritative time source:
 - **Stratum 0**: Atomic clock, GPS (reference hardware)
 - **Stratum 1**: Directly connected to Stratum 0 (e.g., `time.nist.gov`)
 - **Stratum 2**: Syncs from Stratum 1 (e.g., `pool.ntp.org` servers)
-- **Stratum 3**: Syncs from Stratum 2 (e.g., your DC1)
-- **Stratum 4**: Syncs from Stratum 3 (e.g., your DC2, member servers)
+- **Stratum 3**: Syncs from Stratum 2 (e.g., OPNsense)
+- **Stratum 4**: Syncs from Stratum 3 (e.g., your DC1)
+- **Stratum 5**: Syncs from Stratum 4 (e.g., your DC2, member servers)
 
 **Normal ranges:**
 
-- DCs: Stratum 2-4 (acceptable)
+- DCs: Stratum 3-5 (acceptable with internal NTP)
 - Stratum 10+: Problem - too far from authoritative source
 
 ### Proxmox RTC Clock Issue
@@ -522,7 +547,7 @@ AD DNS servers are **authoritative** for `reginleif.io` but **cannot resolve** e
 
 ```text
 ┌─────────────────────────────────────────────────────────┐
-│  DNS Resolution Flow                                     │
+│  DNS Resolution Flow                                    │
 └─────────────────────────────────────────────────────────┘
 
 Client queries "reginleif.io"
@@ -704,10 +729,28 @@ Source: P-WIN-DC1
 1. **Two firewall layers**: Network firewall (OPNsense) AND host firewall (Windows) - both must allow traffic
 2. **AD Sites define topology**: Subnets → Sites → Client affinity + scheduled replication
 3. **Multi-master replication**: All DCs are writable, USNs track changes, conflicts resolved by timestamp
-4. **Time sync hierarchy**: PDC Emulator → external NTP, other DCs → PDC Emulator, members → authenticating DC
+4. **Time sync hierarchy (enterprise)**: OPNsense → external NTP, PDC Emulator → OPNsense, other DCs → PDC Emulator, members → authenticating DC
 5. **5-minute Kerberos rule**: Clock skew > 5 minutes breaks all authentication
 6. **No loopback DNS**: DCs should point to partner DC first, self second (never 127.0.0.1)
 7. **Forward + Reverse DNS**: Both A records and PTR records required for proper DNS operation
 8. **DNS forwarders**: AD DNS forwards external queries to OPNsense (local recursive resolver)
 9. **FSMO roles**: PDC Emulator is critical (time sync, password changes, Group Policy)
 10. **Replication troubleshooting**: `repadmin` commands show replication status, `dcdiag` validates DC health
+
+---
+
+## Key Terms Glossary
+
+| Term | Definition |
+|:-----|:-----------|
+| **AD Site** | Logical grouping of subnets for DC affinity and replication scheduling |
+| **Site Link** | Connection defining replication schedule and cost between AD sites |
+| **Intra-site replication** | Near-instant (15-second) replication between DCs in the same site |
+| **Inter-site replication** | Scheduled, compressed replication between DCs in different sites |
+| **FSMO** | Flexible Single Master Operations: roles requiring single-DC ownership |
+| **PDC Emulator** | FSMO role for time sync, password changes, and Group Policy |
+| **RID Master** | FSMO role allocating RID pools for SID generation |
+| **Stratum** | NTP hierarchy level indicating distance from authoritative time source |
+| **Forward DNS** | Hostname to IP resolution (A records) |
+| **Reverse DNS** | IP to hostname resolution (PTR records) |
+| **AD-Integrated DNS** | DNS zones stored in Active Directory database, replicated via AD |

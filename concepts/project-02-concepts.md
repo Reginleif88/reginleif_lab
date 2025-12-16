@@ -211,26 +211,9 @@ When you boot the Windows installer on a Proxmox VM with VirtIO SCSI:
 
 The "trick" is to inject drivers **during** installation:
 
-```text
-┌─────────────────────────────────────────────────────────┐
-│  Windows Installer                                       │
-│  "Where should I install Windows?"                       │
-│  [ ] No drives found                                     │
-│                                                          │
-│  [Load Driver] ← Click here                             │
-└─────────────────────────────────────────────────────────┘
-             ↓
-┌─────────────────────────────────────────────────────────┐
-│  Browse to E:\vioscsi\2k22\amd64                        │
-│  (virtio-win.iso mounted as second CD-ROM)              │
-└─────────────────────────────────────────────────────────┘
-             ↓
-┌─────────────────────────────────────────────────────────┐
-│  Windows loads VirtIO SCSI driver                       │
-│  Disk suddenly appears!                                  │
-│  [●] 80 GB VirtIO SCSI Disk                             │
-└─────────────────────────────────────────────────────────┘
-```
+1. When Windows Setup shows "Where do you want to install Windows?" with no drives listed, click **Load Driver**
+2. Browse to `E:\vioscsi\2k22\amd64` on the second CD-ROM (virtio-win.iso)
+3. Windows loads the VirtIO SCSI driver and the disk immediately appears
 
 **Why is this necessary?**
 
@@ -278,6 +261,9 @@ The **QEMU Guest Agent** is a background service that runs inside the VM and com
 - **Operational visibility**: See VM IP addresses without logging in
 - **Graceful shutdowns**: Prevents filesystem corruption during host maintenance
 
+> [!TIP]
+> **Install the Guest Agent early.** For Domain Controllers running AD databases, application-consistent snapshots (via VSS integration) are critical for backup integrity. Crash-consistent snapshots can leave NTDS.dit in an inconsistent state.
+
 ---
 
 ## Why Disable Windows Update?
@@ -285,6 +271,9 @@ The **QEMU Guest Agent** is a background service that runs inside the VM and com
 In production, automatic updates are disabled to ensure controlled change management: updates must be tested, approved, and scheduled. Unexpected reboots can break AD replication or cluster quorum. Updates are deployed centrally via **WSUS** or **ConfigMgr** in maintenance windows.
 
 For the lab, disabling updates prevents surprises during initial configuration. Re-enable (via WSUS) once core infrastructure is stable.
+
+> [!NOTE]
+> **This is temporary.** Once WSUS is deployed (Project 10+), you'll re-enable Windows Update pointed at your WSUS server for controlled, centralized patch management.
 
 ---
 
@@ -305,4 +294,3 @@ For the lab, disabling updates prevents surprises during initial configuration. 
 | **vioscsi** | VirtIO SCSI driver for Windows. Enables high-performance disk access |
 | **NetKVM** | VirtIO network driver for Windows. Enables high-performance networking |
 | **WSUS** | Windows Server Update Services: centralized update management for Windows environments |
-
